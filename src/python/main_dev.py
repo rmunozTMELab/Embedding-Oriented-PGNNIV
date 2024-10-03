@@ -16,17 +16,17 @@ from utils.checkpoints import load_checkpoint, save_checkpoint
 from trainers.train import train_epoch
 
 
+ROOT_PATH = r'C:\Users\usuario\Desktop\rmunozTMELab\Physically-Guided-Machine-Learning'
+DATA_PATH = os.path.join(ROOT_PATH, r'data\linear_homogeneous\linear_homogeneous.pkl')
+RESULTS_FOLDER_PATH = os.path.join(ROOT_PATH, r'results\linear_homogeneous')
+MODEL_RESULTS_PATH = os.path.join(ROOT_PATH, r'results\linear_homogeneous\lineal_homogeneous_prueba')
 
-
-MODEL_NAME = 'linear_homogeneous'
-DATA_FOLDER_PATH = r'C:\Users\usuario\Desktop\rmunozTMELab\Physically-Guided-Machine-Learning\data'
-DATA_PATH = os.path.join(DATA_FOLDER_PATH, MODEL_NAME, f'{MODEL_NAME}.pkl')
-
-RESULTS_FOLDER_PATH = r'C:\Users\usuario\Desktop\rmunozTMELab\Physically-Guided-Machine-Learning\results'
-RESULTS_PATH = os.path.join(RESULTS_FOLDER_PATH, MODEL_NAME)
-
+create_folder(RESULTS_FOLDER_PATH)
+create_folder(MODEL_RESULTS_PATH)
 
 dataset = load_data(DATA_PATH)
+
+
 
 ############ ------------------------------------
 dx = dataset['x_step_size']
@@ -68,9 +68,6 @@ hidden2_dim = 100
 # Crear el modelo
 model = ConstantDiffusivityNeuralNetwork(input_shape, hidden1_dim, hidden2_dim, output_shape)
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-
-FOLDER = os.path.join(RESULTS_PATH, f'{MODEL_NAME}_PRUEBA_2')
-create_folder(FOLDER)
 
 epochs = 10
 
