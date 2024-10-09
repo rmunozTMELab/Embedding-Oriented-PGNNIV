@@ -26,13 +26,6 @@ def load_checkpoint(model, optimizer, epoch, folder_path):
     filename = os.path.join(folder_path, f'epoch_{str(epoch)}.pth')
     checkpoint = torch.load(filename, weights_only=False)
 
-    # model_architecture = checkpoint.get('model_architecture')
-    
-    # if model_class and model_architecture:
-    #     model = model_class(**model_architecture)
-    # else:
-    #     raise ValueError("No se ha proporcionado la clase del modelo o los datos de la arquitectura.")
-
     model.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
     
@@ -40,3 +33,14 @@ def load_checkpoint(model, optimizer, epoch, folder_path):
     
     return model, optimizer, kwargs
 
+def load_results(model, optimizer, folder_path):
+
+    filename = os.path.join(folder_path, f'epoch_final.pth')
+    checkpoint = torch.load(filename, weights_only=False)
+
+    model.load_state_dict(checkpoint['model_state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    
+    kwargs = {key: checkpoint[key] for key in checkpoint if key not in ['model_state_dict', 'optimizer_state_dict', 'model_architecture']}
+    
+    return model, optimizer, kwargs

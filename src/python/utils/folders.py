@@ -2,9 +2,7 @@ import os
 
 def create_folder(file_path):
     try:
-        # Check if the folder already exists
         if not os.path.exists(file_path):
-            # Attempt to create the folder
             os.makedirs(file_path)
             print(f"Folder successfully created at: {file_path}")
         else:

@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 class ConstantDiffusivityNeuralNetwork(nn.Module):
 
@@ -13,10 +12,10 @@ class ConstantDiffusivityNeuralNetwork(nn.Module):
         self.output_size = output_size
 
         # Predictive network
-        self.flatten_layer_pred = nn.Flatten()
-        self.hidden1_layer_pred = nn.Linear(torch.prod(torch.tensor(self.input_size)), self.hidden1_dim)  # Ajusta las dimensiones de entrada y salida
-        self.hidden2_layer_pred = nn.Linear(self.hidden1_dim, self.hidden2_dim)  # Ajusta según el tamaño de la salida de hidden1
-        self.output_layer_pred = nn.Linear(self.hidden2_dim, self.output_size[1] * self.output_size[2])  # Ajusta según el tamaño de la salida de hidden2
+        self.flatten_layer_pred = nn.Flatten(start_dim=1, end_dim=-1)
+        self.hidden1_layer_pred = nn.Linear(torch.prod(torch.tensor(self.input_size)), self.hidden1_dim)  
+        self.hidden2_layer_pred = nn.Linear(self.hidden1_dim, self.hidden2_dim)  
+        self.output_layer_pred = nn.Linear(self.hidden2_dim, self.output_size[1] * self.output_size[2])  
 
         # Matrix of trainable parameters
         self.weight_matrix = nn.Parameter(torch.randn(output_size[0], output_size[1] - 1, output_size[2] - 1))

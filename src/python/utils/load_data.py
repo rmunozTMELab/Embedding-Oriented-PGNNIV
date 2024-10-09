@@ -3,12 +3,9 @@ import pickle
 
 def load_data(file_path):
     try:
-        # Check if the file exists
         if not os.path.exists(file_path):
             print(f"File not found: {file_path}")
             return None
-
-        # Open and load the data from the file
         with open(file_path, 'rb') as f:
             data = pickle.load(f)
             print(f"Data successfully loaded from: {file_path}")

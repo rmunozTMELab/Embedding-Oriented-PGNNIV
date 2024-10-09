@@ -3,42 +3,34 @@ import torch
 
 from vecopsciml.algebra import zero_order as azo
 from vecopsciml.operators import zero_order as zo
-from vecopsciml.kernels.derivative import DerivativeKernels
-from vecopsciml.utils import Tensor
+from vecopsciml.utils import TensOps
 
 
 def pi1_constraint(y_pred, K_pred, D):
 
-    y_pred = Tensor(y_pred, space_dimension=2, order=0)
-    K_pred = Tensor(K_pred, space_dimension=2, order=0)
+    y_pred = TensOps(y_pred, space_dimension=2, contravariance=0, covariance=0)
+    K_pred = TensOps(K_pred.unsqueeze(0).repeat(y_pred.values.shape[0], 1, 1, 1), space_dimension=2, contravariance=0, covariance=0)
 
-    dy = zo.gradient(y_pred, D)
+    qx = azo.scalar_product(K_pred, zo.Dx(y_pred, D))
+    qy = azo.scalar_product(K_pred, zo.Dy(y_pred, D))
 
-    qx = Tensor(-torch.mul(K_pred.values, dy.values[:, 0].unsqueeze(1)), space_dimension=2, order=0)
-    qy = Tensor(-torch.mul(K_pred.values, dy.values[:, 1].unsqueeze(1)), space_dimension=2, order=0)
-
-    dqxdx = zo.gradient(qx, D).values[:, 0].unsqueeze(1)
-    dqydy = zo.gradient(qy, D).values[:, 1].unsqueeze(1)
+    dqxdx = zo.Dx(qx, D)
+    dqydy = zo.Dy(qy, D)
 
     pi1 = dqxdx + dqydy
 
-    return Tensor(pi1, space_dimension=2, order=0)
-    # return pi1
-
+    return pi1
 
 # Constraint e
 def e_constraint(y_true, y_pred):
 
-    y_pred = Tensor(y_pred, y_true.space_dim, y_true.order)
-    e = azo.subtraction(y_true, y_pred)
+    y_pred = TensOps(y_pred, space_dimension=2, contravariance=0, covariance=0)
+    e = y_true - y_pred
     return e
 
 
 # Constraint pi2
 def pi2_constraint(X_true, y_pred):
-
-    X_true = X_true.values
-    y_pred = y_pred
 
     return torch.concat([y_pred[:, :, :, 0].unsqueeze(1) - X_true[:, :, :, 0].unsqueeze(1),
                          y_pred[:, :, :, -1].unsqueeze(1) - X_true[:, :, :, 1].unsqueeze(1), 
@@ -49,14 +41,13 @@ def pi2_constraint(X_true, y_pred):
 # Constraint pi3
 def pi3_constraint(X_true, y_pred, K_pred, D):
     
-    y_pred = Tensor(y_pred, space_dimension=2, order=0)
-    K_pred = Tensor(K_pred, space_dimension=2, order=0)
+    y_pred = TensOps(y_pred, space_dimension=2, contravariance=0, covariance=0)
+    K_pred = TensOps(K_pred.unsqueeze(0).repeat(y_pred.values.shape[0], 1, 1, 1), space_dimension=2, contravariance=0, covariance=0)
 
-    dy = zo.gradient(y_pred, D)
+    qx_pred = azo.scalar_product(K_pred, zo.Dx(y_pred, D)).values
+    qy_pred = azo.scalar_product(K_pred, zo.Dy(y_pred, D)).values
 
-    qx_pred = -torch.mul(K_pred.values, dy.values[:, 0].unsqueeze(1)) 
-    qy_pred = -torch.mul(K_pred.values, dy.values[:, 1].unsqueeze(1))
-
+    X_true = TensOps(X_true, space_dimension=2, contravariance=0, covariance=0)
     X_true_red = (zo.My(X_true)).values
 
     return torch.concat([qx_pred[:, :, :, 0].unsqueeze(1) - X_true_red[:, :, :, 4].unsqueeze(1),
