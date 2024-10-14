@@ -1,1 +1,2 @@
 from .constant_diffusivity import ConstantDiffusivityNeuralNetwork
+from .non_constant_diffusivity import NonConstantDiffusivityNeuralNetwork

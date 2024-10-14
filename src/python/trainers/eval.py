@@ -1,25 +1,8 @@
-import torch.nn as nn
 import torch
 
 from vecopsciml.algebra import zero_order as azo
 from vecopsciml.operators import zero_order as zo
 from vecopsciml.utils import TensOps
-
-
-def pi1_constraint(y_pred, K_pred, D):
-
-    y_pred = TensOps(y_pred, space_dimension=2, contravariance=0, covariance=0)
-    K_pred = TensOps(K_pred.unsqueeze(0).repeat(y_pred.values.shape[0], 1, 1, 1), space_dimension=2, contravariance=0, covariance=0)
-
-    qx = azo.scalar_product(K_pred, zo.Dx(y_pred, D))
-    qy = azo.scalar_product(K_pred, zo.Dy(y_pred, D))
-
-    dqxdx = zo.Dx(qx, D)
-    dqydy = zo.Dy(qy, D)
-
-    pi1 = dqxdx + dqydy
-
-    return pi1
 
 # Constraint e
 def e_constraint(y_true, y_pred):
@@ -28,21 +11,36 @@ def e_constraint(y_true, y_pred):
     e = y_true - y_pred
     return e
 
+def pi1_constraint(y_pred, K_pred, f_true, D):
+
+    y_pred = TensOps(y_pred, space_dimension=2, contravariance=0, covariance=0)
+    K_pred = TensOps(K_pred, space_dimension=2, contravariance=0, covariance=0)
+
+    qx = azo.scalar_product(K_pred, zo.Dx(y_pred, D))
+    qy = azo.scalar_product(K_pred, zo.Dy(y_pred, D))
+
+    dqxdx = zo.Dx(qx, D)
+    dqydy = zo.Dy(qy, D)
+
+    f_pred = -(dqxdx + dqydy)
+
+    return f_pred - zo.Mx(zo.Mx(zo.My(zo.My(f_true))))
+
 
 # Constraint pi2
 def pi2_constraint(X_true, y_pred):
 
     return torch.concat([y_pred[:, :, :, 0].unsqueeze(1) - X_true[:, :, :, 0].unsqueeze(1),
                          y_pred[:, :, :, -1].unsqueeze(1) - X_true[:, :, :, 1].unsqueeze(1), 
-                         y_pred[:, :, 0].unsqueeze(1) - X_true[:, :, :, 2].unsqueeze(1),
-                         y_pred[:, :, -1].unsqueeze(1) - X_true[:, :, :, 3].unsqueeze(1),
+                         y_pred[:, :, 0, :].unsqueeze(1) - X_true[:, :, :, 2].unsqueeze(1),
+                         y_pred[:, :, -1, :].unsqueeze(1) - X_true[:, :, :, 3].unsqueeze(1),
                          ], dim=1)
 
 # Constraint pi3
 def pi3_constraint(X_true, y_pred, K_pred, D):
     
     y_pred = TensOps(y_pred, space_dimension=2, contravariance=0, covariance=0)
-    K_pred = TensOps(K_pred.unsqueeze(0).repeat(y_pred.values.shape[0], 1, 1, 1), space_dimension=2, contravariance=0, covariance=0)
+    K_pred = TensOps(K_pred, space_dimension=2, contravariance=0, covariance=0)
 
     qx_pred = azo.scalar_product(K_pred, zo.Dx(y_pred, D)).values
     qy_pred = azo.scalar_product(K_pred, zo.Dy(y_pred, D)).values
@@ -52,8 +50,8 @@ def pi3_constraint(X_true, y_pred, K_pred, D):
 
     return torch.concat([qx_pred[:, :, :, 0].unsqueeze(1) - X_true_red[:, :, :, 4].unsqueeze(1),
                          qx_pred[:, :, :, -1].unsqueeze(1) - X_true_red[:, :, :, 5].unsqueeze(1),
-                         qy_pred[:, :, :, 0].unsqueeze(1) - X_true_red[:, :, :, 6].unsqueeze(1),
-                         qy_pred[:, :, :, -1].unsqueeze(1) - X_true_red[:, :, :, 7].unsqueeze(1),
+                         qy_pred[:, :, 0, :].unsqueeze(1) - X_true_red[:, :, :, 6].unsqueeze(1),
+                         qy_pred[:, :, -1, :].unsqueeze(1) - X_true_red[:, :, :, 7].unsqueeze(1),
                          ], dim=1)
 
 
@@ -65,13 +63,13 @@ def MSE(diff_tensor):
         return torch.sum(torch.square(diff_tensor.values))
     
 
-def loss_function(X_true, y_true, y_pred, K_pred, D):
+def loss_function(X_true, y_true, y_pred, K_pred, f_true, D):
 
     e = MSE(e_constraint(y_true, y_pred))
-    pi1 = MSE(pi1_constraint(y_pred, K_pred, D))
+    pi1 = MSE(pi1_constraint(y_pred, K_pred, f_true, D))
     pi2 = MSE(pi2_constraint(X_true, y_pred))
     pi3 = MSE(pi3_constraint(X_true, y_pred, K_pred, D))
 
-    total_loss = 1e7*e + 1e4*pi1 + 1e3*pi2 + 1e5*pi3
+    total_loss = 1e7*e + 1e5*pi1 + 1e3*pi2 + 1e5*pi3
 
     return total_loss, e, pi1, pi2, pi3
