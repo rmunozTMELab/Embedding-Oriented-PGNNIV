@@ -6,7 +6,7 @@ from vecopsciml.operators.zero_order import Mx, My
 
 class NonConstantDiffusivityNeuralNetwork(nn.Module):
 
-    def __init__(self, input_size, hidden1_dim, hidden2_dim, output_size, n_filters=15, **kwargs):
+    def __init__(self, input_size, hidden1_dim, hidden2_dim, output_size, n_filters=5, **kwargs):
         super(NonConstantDiffusivityNeuralNetwork, self).__init__()
 
         self.input_size = input_size
@@ -40,6 +40,7 @@ class NonConstantDiffusivityNeuralNetwork(nn.Module):
         # Mean operator
         u_pred = output_dense_pred.view(output_dense_pred.size(0), 1, self.output_size[1], self.output_size[2])
         um_pred = Mx(My(TensOps(u_pred, space_dimension=2, contravariance=0, covariance=0))).values
+
         
         # Explanatory network
         x = torch.sigmoid(self.conv1_exp(um_pred))

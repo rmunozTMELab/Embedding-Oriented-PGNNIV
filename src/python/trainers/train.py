@@ -28,7 +28,7 @@ def test_epoch(model, X_test, y_test, f_test, D):
 
 
 def train_loop(model, optimizer, n_checkpoints, X_train, y_train, X_test, y_test, f_train, f_test,
-               D, start_epoch, n_epochs, batch_size, model_results_path, new_lr=None):
+               D, start_epoch, n_epochs, batch_size, model_results_path, device, new_lr=None):
 
     print("Start training")
 
@@ -77,9 +77,9 @@ def train_loop(model, optimizer, n_checkpoints, X_train, y_train, X_test, y_test
     for epoch_i in range(start_epoch, n_epochs):
         for batch_start in range(0, N_train, batch_size):
 
-            X_batch = X_train[batch_start:(batch_start+batch_size)]
-            y_batch = TensOps(y_train.values[batch_start:(batch_start+batch_size)], space_dimension=y_train.space_dim, contravariance=y_train.order[0], covariance=y_train.order[1])
-            f_batch = TensOps(f_train.values[batch_start:(batch_start+batch_size)], space_dimension=f_train.space_dim, contravariance=f_train.order[0], covariance=f_train.order[1])
+            X_batch = X_train[batch_start:(batch_start+batch_size)].to(device)
+            y_batch = TensOps(y_train.values[batch_start:(batch_start+batch_size)].to(device), space_dimension=y_train.space_dim, contravariance=y_train.order[0], covariance=y_train.order[1])
+            f_batch = TensOps(f_train.values[batch_start:(batch_start+batch_size)].to(device), space_dimension=f_train.space_dim, contravariance=f_train.order[0], covariance=f_train.order[1])
 
             loss, e_loss, pi1_loss, pi2_loss, pi3_loss = train_epoch(model, optimizer, X_batch, y_batch, f_batch, D)
 

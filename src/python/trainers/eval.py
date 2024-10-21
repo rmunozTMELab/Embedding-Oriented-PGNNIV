@@ -70,6 +70,6 @@ def loss_function(X_true, y_true, y_pred, K_pred, f_true, D):
     pi2 = MSE(pi2_constraint(X_true, y_pred))
     pi3 = MSE(pi3_constraint(X_true, y_pred, K_pred, D))
 
-    total_loss = 1e7*e + 1e5*pi1 + 1e3*pi2 + 1e5*pi3
+    total_loss = 1e7*e + 1e4*pi1 + 1e3*pi2 + 1e5*pi3
 
     return total_loss, e, pi1, pi2, pi3

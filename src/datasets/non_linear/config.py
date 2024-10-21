@@ -10,7 +10,7 @@ DATA_PATH = os.path.join(DATA_BASE_PATH, MODEL_NAME)
 # Save configuration in a dictionary
 DATASET_CONFIG = {
     'MODEL_NAME': MODEL_NAME,
-    'N_DATA': 1000,             
+    'N_DATA': 100,             
     'N_DISCRETIZATION': 10,
     'x0': 0, 
     'xN': 1,  

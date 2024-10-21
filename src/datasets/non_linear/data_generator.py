@@ -1,8 +1,12 @@
 import os
 import pickle
 import numpy as np
+import random
+import torch
+
 from sklearn.model_selection import train_test_split
 from utils.folders import create_folder
+
 
 class DataGenerator:
     """
@@ -24,6 +28,10 @@ class DataGenerator:
         self.x0, self.xN = config['x0'], config['xN']  # Range for x-axis
         self.y0, self.yN = config['y0'], config['yN']  # Range for y-axis
         self.custom_seed = seed  # Custom seed for reproducibility
+
+        random.seed(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
         
         self.x, self.x_step_size = self._create_axis(self.x0, self.xN)
         self.y, self.y_step_size = self._create_axis(self.y0, self.yN)
@@ -98,8 +106,8 @@ class DataGenerator:
             array: The computed qx values.
         """
         g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y)  # Expand dimensions for calculations
-        # return 1/2 * g2 * (1 - np.sqrt(g1 + g2*X + g3*Y))  # Calculate qx based on g1 and g2
-        return 1/2 * g2 * np.ones_like(X)
+        return 1/2 * g2 * (1 - np.sqrt(g1 + g2*X + g3*Y))  # Calculate qx based on g1 and g2
+        # return 1/2 * g2 * np.ones_like(X)
 
 
     def qy_func(self, g1, g2, g3, X, Y):
@@ -116,8 +124,8 @@ class DataGenerator:
             array: The computed qy values.
         """
         g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y)  # Expand dimensions for calculations
-        # return 1/2 * g3 * (1 - np.sqrt(g1 + g2*X + g3*Y))  # Calculate qy based on g1 and g2
-        return 1/2 * g3 * np.ones_like(Y)
+        return 1/2 * g3 * (1 - np.sqrt(g1 + g2*X + g3*Y))  # Calculate qy based on g1 and g2
+        # return 1/2 * g3 * np.ones_like(Y)
 
     def k_func(self, g1, g2, g3, X, Y):
         """
@@ -133,8 +141,8 @@ class DataGenerator:
             array: The computed k values.
         """
         g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y)  # Expand dimensions for calculations
-        # return np.sqrt(g1 + g2*X + g3*Y) * (1 - np.sqrt(g1 + g2*X + g3*Y))  # Calculate k (returns an array of ones)
-        return np.sqrt(g1 + g2*X + g3*Y)
+        return np.sqrt(g1 + g2*X + g3*Y) * (1 - np.sqrt(g1 + g2*X + g3*Y))  # Calculate k (returns an array of ones)
+        # return np.sqrt(g1 + g2*X + g3*Y)
 
     def f_func(self, g1, g2, g3, X, Y):
         """
@@ -150,10 +158,10 @@ class DataGenerator:
             array: The computed k values.
         """
         g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y)  # Expand dimensions for calculations
-        # return (1/np.sqrt(g1 + g2*X + g3*Y)) * ((g2**2)/4 + (g3**2)/4)  # Calculate k (returns an array of ones)
-        return np.zeros_like(g1*X)
+        return (1/np.sqrt(g1 + g2*X + g3*Y)) * ((g2**2)/4 + (g3**2)/4)  # Calculate k (returns an array of ones)
+        # return np.zeros_like(g1*X)
 
-    def generate_dataset(self, test_size=0.3):
+    def generate_dataset(self, test_size=0.2):
         """
         Generates a synthetic dataset based on the defined functions and splits it into training and validation sets.
 
@@ -201,7 +209,7 @@ class DataGenerator:
             "y_train": y_train, "y_val": y_val,
             "g1_train": g1_train, "g1_val": g1_val,
             "g2_train": g2_train, "g2_val": g2_val,
-            "g3_train": g2_train, "g3_val": g2_val,
+            "g3_train": g3_train, "g3_val": g3_val,
             "qx_train": qx_train, "qx_val": qx_val,
             "qy_train": qy_train, "qy_val": qy_val,
             "u_train": u_train, "u_val": u_val,
