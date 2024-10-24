@@ -33,10 +33,10 @@ def load_checkpoint(model, optimizer, epoch, folder_path):
     
     return model, optimizer, kwargs
 
-def load_results(model, optimizer, folder_path):
+def load_results(model, optimizer, folder_path, map_location):
 
     filename = os.path.join(folder_path, f'epoch_final.pth')
-    checkpoint = torch.load(filename, weights_only=False)
+    checkpoint = torch.load(filename, weights_only=False, map_location=map_location)
 
     model.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
