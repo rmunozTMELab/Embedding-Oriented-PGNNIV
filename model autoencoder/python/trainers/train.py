@@ -8,9 +8,9 @@ def train_epoch(model, optimizer, X_train, y_train, f_true, D):
 
     model.train()
 
-    y_pred, u_pred, K_pred = model(X_train)
+    y_pred, K_pred = model(X_train)
 
-    loss, e_loss, pi1_loss, pi2_loss, pi3_loss = loss_function(X_train, y_train, y_pred, u_pred, K_pred, f_true, D)
+    loss, e_loss, pi1_loss, pi2_loss, pi3_loss = loss_function(X_train, y_train, y_pred, K_pred, f_true, D)
 
     optimizer.zero_grad() 
     loss.backward(retain_graph=True)
@@ -21,8 +21,8 @@ def train_epoch(model, optimizer, X_train, y_train, f_true, D):
 
 def test_epoch(model, X_test, y_test, f_test, D):
 
-    y_pred, u_pred, K_pred = model(X_test)
-    loss, e_loss, pi1_loss, pi2_loss, pi3_loss = loss_function(X_test, y_test, y_pred, u_pred, K_pred, f_test, D)
+    y_pred, K_pred = model(X_test)
+    loss, e_loss, pi1_loss, pi2_loss, pi3_loss = loss_function(X_test, y_test, y_pred, K_pred, f_test, D)
 
     return loss, e_loss, pi1_loss, pi2_loss, pi3_loss
 

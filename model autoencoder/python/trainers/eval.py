@@ -63,12 +63,12 @@ def MSE(diff_tensor):
         return torch.sum(torch.square(diff_tensor.values))
     
 
-def loss_function(X_true, y_true, y_pred, u_pred, K_pred, f_true, D):
+def loss_function(X_true, y_true, y_pred, K_pred, f_true, D):
 
     e = MSE(e_constraint(y_true, y_pred))
-    pi1 = 0*MSE(pi1_constraint(u_pred, K_pred, f_true, D))
-    pi2 = 0*MSE(pi2_constraint(X_true, u_pred))
-    pi3 = 0*MSE(pi3_constraint(X_true, u_pred, K_pred, D))
+    pi1 = MSE(pi1_constraint(y_pred, K_pred, f_true, D))
+    pi2 = MSE(pi2_constraint(X_true, y_pred))
+    pi3 = MSE(pi3_constraint(X_true, y_pred, K_pred, D))
 
     total_loss = 1e7*e + 1e4*pi1 + 1e3*pi2 + 1e5*pi3
 
