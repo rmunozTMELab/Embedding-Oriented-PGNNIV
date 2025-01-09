@@ -305,11 +305,11 @@ def train_autoencoder_loop(model, optimizer, X_train, y_train, X_test, y_test,
     N_train = X_train.shape[0]
     N_test = X_test.shape[0]
 
-    # Time instant when starts the training of the model for one epoch
-    time_init = time.time()
-
     # Start training loop for specified number of epochs
     for epoch_i in range(start_epoch, n_epochs):
+
+        # Time instant when starts the training of the model for one epoch
+        time_init = time.time()
 
         # Process training data in batches and prepare them in the needed format
         for batch_start in range(0, N_train, batch_size):

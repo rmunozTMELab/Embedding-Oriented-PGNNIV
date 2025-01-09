@@ -1,1 +1,1 @@
-from .model import Encoder, Decoder, Explanatory, BaselineNonlinearModel
+from .baseline_model import Encoder, Decoder, Explanatory, BaselineNonlinearModel

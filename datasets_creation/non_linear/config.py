@@ -9,14 +9,14 @@ BASE_DIR = os.path.abspath(__file__)
 DATA_BASE_PATH = os.path.abspath(os.path.join(BASE_DIR, '..', '..', '..', 'data'))
 
 # Configure the absolute path where the data will be saved
-MODEL_NAME = 'non_linear'
+MODEL_NAME = 'non_linear_fine_grid'
 DATA_PATH = os.path.join(DATA_BASE_PATH, MODEL_NAME)
 
 # Save configuration in a dictionary
 DATASET_CONFIG = {
     'MODEL_NAME': MODEL_NAME,
-    'N_DATA': 10000,             
-    'N_DISCRETIZATION': 10,
+    'N_DATA': 100,             
+    'N_DISCRETIZATION': 100,
     'x0': 0, 
     'xN': 1,  
     'y0': 0,  
