@@ -7,7 +7,6 @@ import torch
 from sklearn.model_selection import train_test_split
 from utils.folders import create_folder
 
-
 class DataGenerator:
     """
     A class to generate synthetic datasets for machine learning models based on a specified configuration.
@@ -27,8 +26,9 @@ class DataGenerator:
         self.N_DISCRETIZATION = config['N_DISCRETIZATION']  # Number of discretization points along axes
         self.x0, self.xN = config['x0'], config['xN']  # Range for x-axis
         self.y0, self.yN = config['y0'], config['yN']  # Range for y-axis
+        self.noise_sigma = config['noise_sigma'] # Percentage of noise added
         self.custom_seed = seed  # Custom seed for reproducibility
-
+        
         random.seed(seed)
         np.random.seed(seed)
         torch.manual_seed(seed)
@@ -161,6 +161,40 @@ class DataGenerator:
         return (1/np.sqrt(g1 + g2*X + g3*Y)) * ((g2**2)/4 + (g3**2)/4)  # Calculate k (returns an array of ones)
         # return np.zeros_like(g1*X)
 
+    def add_noise(self, data):
+        """
+        Adds uniform random noise to the input dataset.
+
+        Args:
+            data: numpy.ndarray
+                Input data array with shape (N, H, W), where:
+                - N is the number of samples.
+                - H and W are the spatial dimensions.
+
+        Returns:
+            numpy.ndarray
+                A new NumPy array of the same shape as `data`, but with added noise.
+        """
+        # Compute the maximum value in each sample along the (H, W) dimensions.
+        noise_added_data = np.max(data, axis=(1, 2))
+        
+        # Calculate the noise scale (sigma) for each sample.
+        sigma = self.noise_sigma * noise_added_data
+        
+        # Generate random uniform noise with the computed sigma as bounds.
+        noise_uniform = np.random.uniform(
+            low = -sigma[:, None, None],  # Lower bound for each sample.
+            high = sigma[:, None, None],  # Upper bound for each sample.
+            size = data.shape             # Shape of noise array.
+        )
+        
+        # Add the generated noise to the input data.
+        noise_added_data = data + noise_uniform
+        
+        # Return the noisy data array.
+        return noise_added_data
+
+
     def generate_dataset(self, test_size=0.2):
         """
         Generates a synthetic dataset based on the defined functions and splits it into training and validation sets.
@@ -172,11 +206,11 @@ class DataGenerator:
             dict: A dictionary containing the training and validation datasets and their respective parameters.
         """
         # Calculate function outputs for u, qx, qy, and k
-        u = self.u_func(self.g1, self.g2, self.g3, self.X_mesh, self.Y_mesh)
-        qx = self.qx_func(self.g1, self.g2, self.g3, self.X_mesh, self.Y_mesh)
-        qy = self.qy_func(self.g1, self.g2, self.g3, self.X_mesh, self.Y_mesh)
-        k = self.k_func(self.g1, self.g2, self.g3, self.X_mesh, self.Y_mesh)
-        f = self.f_func(self.g1, self.g2, self.g3, self.X_mesh, self.Y_mesh)
+        u = self.add_noise(self.u_func(self.g1, self.g2, self.g3, self.X_mesh, self.Y_mesh))
+        qx = self.add_noise(self.qx_func(self.g1, self.g2, self.g3, self.X_mesh, self.Y_mesh))
+        qy = self.add_noise(self.qy_func(self.g1, self.g2, self.g3, self.X_mesh, self.Y_mesh))
+        k = self.add_noise(self.k_func(self.g1, self.g2, self.g3, self.X_mesh, self.Y_mesh))
+        f = self.add_noise(self.f_func(self.g1, self.g2, self.g3, self.X_mesh, self.Y_mesh))
 
         # Concatenate relevant data for X input features
         X = np.concatenate(
