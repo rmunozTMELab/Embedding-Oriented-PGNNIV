@@ -26,7 +26,7 @@ class DataGenerator:
         self.N_DISCRETIZATION = config['N_DISCRETIZATION']  # Number of discretization points along axes
         self.x0, self.xN = config['x0'], config['xN']  # Range for x-axis
         self.y0, self.yN = config['y0'], config['yN']  # Range for y-axis
-        self.noise_sigma = config['noise_sigma'] # Percentage of noise added
+        self.noise_sigma = config['noise_sigma']/100 # Percentage of noise added
         self.custom_seed = seed  # Custom seed for reproducibility
         
         random.seed(seed)
