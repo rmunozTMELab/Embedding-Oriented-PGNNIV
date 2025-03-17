@@ -9,7 +9,7 @@ if __name__ == "__main__":
 
     # Parameters of the data
     N_data = [10, 20, 50, 100, 1000, 5000, 10000] 
-    sigma = [0, 1, 10] # The noise added in '%'
+    sigma = [0, 1, 2, 5, 10] # The noise added in '%'
     combinations = list(itertools.product(N_data, sigma))
 
 

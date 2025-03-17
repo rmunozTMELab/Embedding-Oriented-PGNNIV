@@ -37,22 +37,29 @@ class Explanatory(nn.Module):
 
         # Parameters
         self.in_size = torch.tensor(input_size)
-        self.n_filters = n_filters
+        self.n_filters = n_filters * 1
         self.h_layer = hidden_layer_size
         self.out_size = torch.tensor(output_size)
 
         # Architecture
         self.conv_expand_layer = nn.Conv2d(in_channels=1, out_channels=self.n_filters, kernel_size=1)
-        self.flatten_layer = nn.Flatten(start_dim=1, end_dim=-1)
-        self.hidden_layer = nn.Linear(n_filters*torch.prod(self.in_size), n_filters*torch.prod(self.out_size))
-        self.conv_converge_layer = nn.Conv2d(in_channels=n_filters, out_channels=1, kernel_size=1)
+        self.hidden_layer_1 = nn.Linear(self.n_filters, self.h_layer)
+        self.hidden_layer_2 = nn.Linear(self.h_layer, self.n_filters)
+        self.conv_converge_layer = nn.Conv2d(in_channels=self.n_filters, out_channels=1, kernel_size=1)
         
     def forward(self, X):
+
+        batch_size, _, height, width = X.shape
         
-        X = torch.sigmoid(self.conv_expand_layer(X))
-        X = self.flatten_layer(X)
-        X = self.hidden_layer(X)
-        X = X.view(X.size(0), self.n_filters, self.out_size[1], self.out_size[2])
+        X = self.conv_expand_layer(X)
+        X = X.permute(0, 2, 3, 1)  # (batch, height, width, channels)
+        X = X.reshape(-1, X.size(-1))  # (batch * height * width, channels)
+
+        X = torch.sigmoid(self.hidden_layer_1(X))
+        X = torch.sigmoid(self.hidden_layer_2(X))
+        
+        X = X.reshape(batch_size, height, width, -1)
+        X = X.permute(0, 3, 1, 2)  # (batch, channels, height, width)
         explanatory_output = self.conv_converge_layer(X)
 
         return explanatory_output

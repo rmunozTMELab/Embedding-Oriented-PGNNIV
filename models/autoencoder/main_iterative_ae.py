@@ -14,7 +14,7 @@ from utils.load_data import load_data
 from trainers.train import train_loop
 
 # Parameters of the data
-N_DATA = [10, 20, 50, 100, 1000, 5000, 10000] 
+N_DATA = [10, 20, 50, 100, 1000, 5000] 
 SIGMA = [0, 1, 10] # The noise added in '%'
 N_MODES = [1, 2, 5, 10, 20, 50, 100]
 
@@ -35,8 +35,8 @@ for combination_i in combinations:
     ROOT_PATH = r'/home/rmunoz/Escritorio/rmunozTMELab/Physically-Guided-Machine-Learning'
     DATA_PATH = os.path.join(ROOT_PATH, r'data/', data_name, data_name) + '.pkl'
     RESULTS_FOLDER_PATH = os.path.join(ROOT_PATH, r'results/', data_name)
-    MODEL_RESULTS_AE_PATH = os.path.join(ROOT_PATH, r'results/', data_name, 'model_autoencoder_AE') + str(n_modes)
-    MODEL_RESULTS_PGNNIV_PATH = os.path.join(ROOT_PATH, r'results/', data_name, 'model_autoencoder_NN') + str(n_modes)
+    MODEL_RESULTS_AE_PATH = os.path.join(ROOT_PATH, r'results/', data_name, 'model_autoencoder_AE_') + str(n_modes)
+    MODEL_RESULTS_PGNNIV_PATH = os.path.join(ROOT_PATH, r'results/', data_name, 'model_autoencoder_NN_') + str(n_modes)
 
     # Creamos las carpetas que sean necesarias (si ya están creadas se avisará de ello)
     create_folder(RESULTS_FOLDER_PATH)
@@ -100,7 +100,7 @@ for combination_i in combinations:
     from trainers.train import train_autoencoder_loop
 
     autoencoder_input_shape = y_train_AE.values[0].shape
-    latent_space_dim = [15, 10, n_modes_i, 10, 15]
+    latent_space_dim = [20, 10, n_modes_i, 10, 20]
     autoencoder_output_shape = y_train_AE.values[0].shape
 
     X_train = y_train_AE.values
@@ -113,20 +113,29 @@ for combination_i in combinations:
     optimizer = torch.optim.Adam(autoencoder.parameters(), lr=1e-2)
 
     start_epoch = 0
-    n_epochs = 10000
+    n_epochs = 11000
     batch_size = 64
-    n_checkpoint = 10
+    n_checkpoint = 11
     new_lr = None
 
     train_autoencoder_loop(autoencoder, optimizer, X_train, y_train, X_test, y_test,  
                         n_checkpoint, start_epoch, n_epochs, batch_size, MODEL_RESULTS_AE_PATH, DEVICE, new_lr)
 
-    start_epoch = 9000
-    n_epochs = 20000
+    start_epoch = 10000
+    n_epochs = 22000
     batch_size = 64
-    n_checkpoint = 10
-    new_lr = 1e-4
-    4
+    n_checkpoint = 11
+    new_lr = 3e-3
+
+    train_autoencoder_loop(autoencoder, optimizer, X_train, y_train, X_test, y_test,  
+                        n_checkpoint, start_epoch, n_epochs, batch_size, MODEL_RESULTS_AE_PATH, DEVICE, new_lr)
+    
+    start_epoch = 20000
+    n_epochs = 25000
+    batch_size = 64
+    n_checkpoint = 5
+    new_lr = 3e-4
+
     train_autoencoder_loop(autoencoder, optimizer, X_train, y_train, X_test, y_test,  
                         n_checkpoint, start_epoch, n_epochs, batch_size, MODEL_RESULTS_AE_PATH, DEVICE, new_lr)
 
@@ -135,12 +144,12 @@ for combination_i in combinations:
 
     # Predictive network architecture
     input_shape = X_train_NN[0].shape
-    predictive_layers = [15, 10, n_modes_i]
+    predictive_layers = [20, 10, n_modes_i]
     predictive_output = y_train_NN.values[0].shape
 
     # Explanatory network architecture
     explanatory_input = Mx(My(y_train_NN)).values[0].shape
-    explanatory_layers = [10, 10]
+    explanatory_layers = [10]
     explanatory_output = Mx(My(f_train_NN)).values[0].shape
 
     # Other parameters
@@ -151,32 +160,32 @@ for combination_i in combinations:
     for param in pretrained_decoder.parameters():
         param.requires_grad = False
 
-    for name, param in pretrained_decoder.named_parameters():
-        print(f"{name}: requires_grad={param.requires_grad}")
+    # for name, param in pretrained_decoder.named_parameters():
+    #     print(f"{name}: requires_grad={param.requires_grad}")
 
     model = AutoencoderNonlinearModel(input_shape, predictive_layers, pretrained_decoder, predictive_output, explanatory_input,
                                     explanatory_layers, explanatory_output, n_filters_explanatory).to(DEVICE)
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-2)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
     # Parametros de entrenamiento (entrenamiento 1)
     start_epoch = 0
-    n_epochs = 20000
+    n_epochs = 110000
 
     batch_size = 64
-    n_checkpoints = 10
+    n_checkpoints = 11
 
     train_loop(model, optimizer, X_train_NN, y_train_NN, f_train_NN, X_test_NN, y_test_NN, f_test_NN,
             D, n_checkpoints, start_epoch=start_epoch, n_epochs=n_epochs, batch_size=batch_size, 
             model_results_path=MODEL_RESULTS_PGNNIV_PATH, device=DEVICE)
 
     # Parametros de entrenamiento (entrenamiento 2)
-    start_epoch = 18000
-    n_epochs = 100000
+    start_epoch = 100000
+    n_epochs = 150000
 
     batch_size = 64 
     n_checkpoints = 100
 
-    second_lr = 1e-4
+    second_lr = 3e-4
 
     train_loop(model, optimizer, X_train_NN, y_train_NN, f_train_NN, X_test_NN, y_test_NN, f_test_NN,
             D, n_checkpoints, start_epoch=start_epoch, n_epochs=n_epochs, batch_size=batch_size, 

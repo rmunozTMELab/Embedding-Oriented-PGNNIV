@@ -16,9 +16,9 @@ from utils.folders import create_folder
 from utils.load_data import load_data
 
 # Parameters of the data
-N_DATA = [10, 20, 50, 100, 1000, 5000, 10000] 
-SIGMA = [0, 1, 10] # The noise added in '%'
-N_MODES = [1, 2, 5, 10, 20, 50, 100]
+N_DATA = [10, 20, 50, 100, 1000, 5000] 
+SIGMA = [0, 1, 5, 10] # The noise added in '%'
+N_MODES = [10, 20, 50, 100]
 
 combinations = list(itertools.product(N_DATA, SIGMA, N_MODES))
 
@@ -89,7 +89,7 @@ for combination_i in combinations:
 
     # Explanatory network architecture
     explanatory_input = Mx(My(y_train)).values[0].shape
-    explanatory_layers = [10, 10]
+    explanatory_layers = [10]
     explanatory_output = Mx(My(f_train)).values[0].shape
 
     # Other parameters
@@ -97,28 +97,28 @@ for combination_i in combinations:
 
     # Load model and the optimizer
     model = BaselineNonlinearModel(input_shape, predictive_layers, predictive_output, explanatory_input, explanatory_layers, explanatory_output, n_filters_explanatory).to(DEVICE)
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-2)
+    optimizer = torch.optim.Adam(model.parameters(), lr=3e-3)
 
     # Parametros de entrenamiento (entrenamiento 1)
     start_epoch = 0
-    n_epochs = 20000
+    n_epochs = 110000
 
     batch_size = 64
-    n_checkpoints = 10
+    n_checkpoints = 11
 
     train_loop(model, optimizer, X_train, y_train, f_train, X_test, y_test, f_test,
             D,  n_checkpoints, start_epoch=start_epoch, n_epochs=n_epochs, batch_size=batch_size, 
             model_results_path=MODEL_RESULTS_PATH, device=DEVICE)
     
     # Parametros de entrenamiento (entrenamiento 2)
-    start_epoch = 18000
-    n_epochs = 100000
+    start_epoch = 100000
+    n_epochs = 150000
 
     batch_size = 64
-    n_checkpoints = 10
+    n_checkpoints = 5
 
-    second_lr = 1e-4
+    second_lr = 3e-4
 
     train_loop(model, optimizer, X_train, y_train, f_train, X_test, y_test, f_test,
             D,  n_checkpoints, start_epoch=start_epoch, n_epochs=n_epochs, batch_size=batch_size, 
-            model_results_path=MODEL_RESULTS_PATH, device=DEVICE, new_lr=second_lr)
+            model_results_path=MODEL_RESULTS_PATH, device=DEVICE, new_lr=second_lr) 
