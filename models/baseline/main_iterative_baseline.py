@@ -18,7 +18,7 @@ from utils.load_data import load_data
 # Parameters of the data
 N_DATA = [10, 20, 50, 100, 1000, 5000] 
 SIGMA = [0, 1, 5, 10] # The noise added in '%'
-N_MODES = [10, 20, 50, 100]
+N_MODES = [1, 2, 5]
 
 combinations = list(itertools.product(N_DATA, SIGMA, N_MODES))
 

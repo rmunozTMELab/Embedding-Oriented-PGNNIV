@@ -92,7 +92,7 @@ class PODNonlinearModel(nn.Module):
         X = self.encoder(X)
 
         # Reconstruction with POD and manipulation of prediction output
-        u = torch.mm(X, self.base).reshape(X.size(0), *self.out_pred_size)
+        u = torch.mm(self.base, X.T).T.reshape(X.size(0), *self.out_pred_size)
         um = Mx(My(TensOps(u, space_dimension=2, contravariance=0, covariance=0))).values
 
         # Explanatory network

@@ -21,7 +21,7 @@ import time
 
 # Parameters of the data
 N_DATA = [10, 20, 50, 100, 1000, 5000] 
-SIGMA = [0, 1, 10] # The noise added in '%'
+SIGMA = [0, 1, 5, 10] # The noise added in '%'
 N_MODES = [1, 2, 5, 10, 20, 50, 100]
 
 
@@ -34,9 +34,6 @@ for combination_i in combinations:
     N_data_i = combination_i[0]
     sigma_i = combination_i[1]
     n_modes_i = combination_i[2]
-
-    if N_data_i < n_modes_i:
-        continue
 
     data_name = 'non_linear_' + str(N_data_i) + '_' + str(sigma_i)
     n_modes = n_modes_i
@@ -83,6 +80,9 @@ for combination_i in combinations:
 
     f_train = TensOps(f_train.to(DEVICE).requires_grad_(True), space_dimension=2, contravariance=0, covariance=0)
     f_test = TensOps(f_test.to(DEVICE).requires_grad_(True), space_dimension=2, contravariance=0, covariance=0)
+    
+    if X_train.shape[0] < n_modes_i:
+        continue
 
     # Loading and processing validation data
     X_val = torch.tensor(dataset['X_val'], dtype=torch.float32).unsqueeze(1)
@@ -90,24 +90,28 @@ for combination_i in combinations:
     K_val = TensOps(torch.tensor(dataset['k_val'], dtype=torch.float32, requires_grad=True).unsqueeze(1), space_dimension=2, contravariance=0, covariance=0)
     f_val = TensOps(torch.tensor(dataset['f_val'], dtype=torch.float32, requires_grad=True).unsqueeze(1), space_dimension=2, contravariance=0, covariance=0)
 
-    U_train, S_train, Vt_train = torch.linalg.svd(y_train.values.detach().squeeze().to('cpu').view(y_train.values.detach().shape[0], -1).T, full_matrices=False)
+    U_train, S_train, Vt_train = torch.linalg.svd(y_train.values.detach().squeeze().to('cpu').view(y_train.values.detach().shape[0], -1), full_matrices=False)
 
     num_modes = n_modes
 
     start_time = time.time()
 
-    U_train, S_train, Vt_train = torch.linalg.svd(y_train.values.detach().squeeze().to('cpu').view(y_train.values.detach().shape[0], -1).T, full_matrices=False)
+    U_train, S_train, Vt_train = torch.linalg.svd(y_train.values.detach().squeeze().to('cpu').view(y_train.values.detach().shape[0], -1), full_matrices=False)
 
     U_reduced_train = U_train[:, :num_modes]
     S_reduced_train = S_train[:num_modes]
     Vt_reduced_train = Vt_train[:num_modes, :]
 
-    POD_base = torch.mm(U_reduced_train, torch.diag(S_reduced_train)).to(DEVICE)
+    POD_base = Vt_reduced_train.to(DEVICE)
     # y_train = Vt_reduced_train.T
 
     end_time = time.time()
+    execution_time = end_time - start_time
 
-    print(f"Tiempo de ejecución: {end_time - start_time:.6f} segundos")
+    print(f"Tiempo de ejecución: {execution_time:.6f} segundos")
+
+    with open(os.path.join(MODEL_RESULTS_PATH, "time.txt"), "w") as file:
+        file.write(str(execution_time))
 
     # Predictive network architecture
     input_shape = X_train[0].shape

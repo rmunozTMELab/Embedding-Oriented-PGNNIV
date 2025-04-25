@@ -64,11 +64,11 @@ class Explanatory(nn.Module):
 
         return explanatory_output
     
-class PODNonlinearModel(nn.Module):
+class AutoencoderNonlinearModel(nn.Module):
     
-    def __init__(self, input_size, predictive_layers, POD_base, output_predictive_size, explanatory_input_size, explanatory_layers, output_explanatory_size, n_filters):
+    def __init__(self, input_size, predictive_layers, pretrained_decoder, output_predictive_size, explanatory_input_size, explanatory_layers, output_explanatory_size, n_filters):
         
-        super(PODNonlinearModel, self).__init__()
+        super(AutoencoderNonlinearModel, self).__init__()
 
         # Parameters
         self.in_size = input_size
@@ -83,19 +83,21 @@ class PODNonlinearModel(nn.Module):
 
         # Architecture
         self.encoder = Encoder(self.in_size, self.pred_size[0], self.pred_size[1], self.pred_size[2])
-        self.base = POD_base
+        self.decoder = pretrained_decoder
         self.explanatory = Explanatory(self.in_exp_size, self.n_filters, self.exp_size[0], self.out_exp_size)
 
     def forward(self, X):
 
         # Predictive network
         X = self.encoder(X)
+        X = self.decoder(X)
+        u = X.view(X.size(0), *self.out_pred_size)
 
-        # Reconstruction with POD and manipulation of prediction output
-        u = torch.mm(X, self.base).reshape(X.size(0), *self.out_pred_size)
+        # Manipulation of prediction output
         um = Mx(My(TensOps(u, space_dimension=2, contravariance=0, covariance=0))).values
 
         # Explanatory network
         K = self.explanatory(um)
         
         return u, K
+    

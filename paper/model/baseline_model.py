@@ -30,6 +30,30 @@ class Encoder(nn.Module):
 
         return latent_space_output
     
+class Decoder(nn.Module):
+
+    def __init__(self, latent_space_size, hidden_layer_1_size, hidden_layer_2_size, output_size):
+        super(Decoder, self).__init__()
+
+        # Parameters
+        self.ls_size = latent_space_size
+        self.h1_size = hidden_layer_1_size
+        self.h2_size = hidden_layer_2_size
+        self.out_size = torch.tensor(output_size)
+
+        # Architecture
+        self.hidden1_layer = nn.Linear(self.ls_size, self.h1_size)
+        self.hidden2_layer = nn.Linear(self.h1_size, self.h2_size)
+        self.output_layer = nn.Linear(self.h2_size, torch.prod(self.out_size))
+    
+    def forward(self, X):
+        
+        X = torch.sigmoid(self.hidden1_layer(X))
+        X = torch.sigmoid(self.hidden2_layer(X))
+        decoder_output = self.output_layer(X)
+
+        return decoder_output
+    
 class Explanatory(nn.Module):
 
     def __init__(self, input_size, n_filters, hidden_layer_size, output_size):
@@ -64,11 +88,11 @@ class Explanatory(nn.Module):
 
         return explanatory_output
     
-class PODNonlinearModel(nn.Module):
+class BaselineNonlinearModel(nn.Module):
     
-    def __init__(self, input_size, predictive_layers, POD_base, output_predictive_size, explanatory_input_size, explanatory_layers, output_explanatory_size, n_filters):
+    def __init__(self, input_size, predictive_layers, output_predictive_size, explanatory_input_size, explanatory_layers, output_explanatory_size, n_filters):
         
-        super(PODNonlinearModel, self).__init__()
+        super(BaselineNonlinearModel, self).__init__()
 
         # Parameters
         self.in_size = input_size
@@ -83,16 +107,17 @@ class PODNonlinearModel(nn.Module):
 
         # Architecture
         self.encoder = Encoder(self.in_size, self.pred_size[0], self.pred_size[1], self.pred_size[2])
-        self.base = POD_base
+        self.decoder = Decoder(self.pred_size[2], self.pred_size[3], self.pred_size[4], self.out_pred_size)
         self.explanatory = Explanatory(self.in_exp_size, self.n_filters, self.exp_size[0], self.out_exp_size)
 
     def forward(self, X):
 
         # Predictive network
         X = self.encoder(X)
+        X = self.decoder(X)
+        u = X.view(X.size(0), *self.out_pred_size)
 
-        # Reconstruction with POD and manipulation of prediction output
-        u = torch.mm(X, self.base).reshape(X.size(0), *self.out_pred_size)
+        # Manipulation of prediction output
         um = Mx(My(TensOps(u, space_dimension=2, contravariance=0, covariance=0))).values
 
         # Explanatory network

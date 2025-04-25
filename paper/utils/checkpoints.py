@@ -20,6 +20,7 @@ def save_checkpoint(model, optimizer, epoch, folder_path, end_flag=False, **kwar
     torch.save(state, filename)
 
 
+
 def load_checkpoint(model, optimizer, epoch, folder_path):
 
     filename = os.path.join(folder_path, f'epoch_{str(epoch)}.pth')
