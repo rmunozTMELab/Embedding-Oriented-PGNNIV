@@ -1,0 +1,13 @@
+\begin{table}
+\caption{Tabla con formato LaTeX}
+\label{tab:formateada}
+\begin{tabular}{lllllllll}
+\toprule
+ &  &  & Hyperparameters & time & eQ1 & eQ2 & eQ3 & eK \\
+N_data & Sigma & Mode &  &  &  &  &  &  \\
+\midrule
+1000 & 0 & 20 & 4711 & 264.38 & 9.83e-05 & 1.31e-04 & 2.01e-04 & 1.19e-01 \\
+\cline{1-9} \cline{2-9}
+\bottomrule
+\end{tabular}
+\end{table}
