@@ -163,7 +163,7 @@ class DataGenerator:
 
     def add_noise(self, data):
         """
-        Adds uniform random noise to the input dataset.
+        Adds normal random noise to the input dataset.
 
         Args:
             data: numpy.ndarray
@@ -178,18 +178,18 @@ class DataGenerator:
         # Compute the maximum value in each sample along the (H, W) dimensions.
         noise_added_data = np.max(data, axis=(1, 2))
         
+        
         # Calculate the noise scale (sigma) for each sample.
         sigma = self.noise_sigma * noise_added_data
         
-        # Generate random uniform noise with the computed sigma as bounds.
-        noise_uniform = np.random.uniform(
-            low = -sigma[:, None, None],  # Lower bound for each sample.
-            high = sigma[:, None, None],  # Upper bound for each sample.
+        # Generate random normal noise with the computed sigma as bounds.
+        noise_normal = np.random.normal(
+            scale = sigma[:, None, None],  # Upper bound for each sample.
             size = data.shape             # Shape of noise array.
         )
         
         # Add the generated noise to the input data.
-        noise_added_data = data + noise_uniform
+        noise_added_data = data + noise_normal
         
         # Return the noisy data array.
         return noise_added_data

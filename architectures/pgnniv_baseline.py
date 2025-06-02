@@ -4,24 +4,6 @@ import torch.nn as nn
 from vecopsciml.utils import TensOps
 from vecopsciml.operators.zero_order import Mx, My
 
-def modes_base(data, n_modes):
-    # FFT decomposition and obtain energy of each mode
-    fft_data = torch.fft.fft2(data)
-    energy = torch.abs(fft_data)
-    energy_flattened = energy.flatten(1, 3)
-    # Get the n_modes more energetic modes and their indices
-    top_energetic = energy_flattened[:, :n_modes]
-    # Create an empty template to include the modes
-    filtered_modes = torch.zeros_like(energy, dtype=torch.complex64)
-    filtered_modes.flatten(1, 3)[:, :n_modes] = fft_data.flatten(1, 3)[:, :n_modes]
-    # Return the base with the 'n_modes' most energetic modes
-    return filtered_modes
-
-def reconstruct_data(coefficients_filtered):
-    # Compute inverse FFT and reconstruct data
-    reconstructed_data = torch.real(torch.fft.ifft2(coefficients_filtered))
-    return reconstructed_data
-
 class Encoder(nn.Module):
 
     def __init__(self, input_size, hidden_layer_1_size, hidden_layer_2_size, latent_space_size):
@@ -47,6 +29,30 @@ class Encoder(nn.Module):
         latent_space_output = (self.latent_space_layer(X))
 
         return latent_space_output
+    
+class Decoder(nn.Module):
+
+    def __init__(self, latent_space_size, hidden_layer_1_size, hidden_layer_2_size, output_size):
+        super(Decoder, self).__init__()
+
+        # Parameters
+        self.ls_size = latent_space_size
+        self.h1_size = hidden_layer_1_size
+        self.h2_size = hidden_layer_2_size
+        self.out_size = torch.tensor(output_size)
+
+        # Architecture
+        self.hidden1_layer = nn.Linear(self.ls_size, self.h1_size)
+        self.hidden2_layer = nn.Linear(self.h1_size, self.h2_size)
+        self.output_layer = nn.Linear(self.h2_size, torch.prod(self.out_size))
+    
+    def forward(self, X):
+        
+        X = torch.sigmoid(self.hidden1_layer(X))
+        X = torch.sigmoid(self.hidden2_layer(X))
+        decoder_output = self.output_layer(X)
+
+        return decoder_output
     
 class Explanatory(nn.Module):
 
@@ -82,11 +88,11 @@ class Explanatory(nn.Module):
 
         return explanatory_output
     
-class FFTNonlinearModel(nn.Module):
+class PGNNIVBaseline(nn.Module):
     
-    def __init__(self, input_size, predictive_layers, FFT_modes_base, output_predictive_size, explanatory_input_size, explanatory_layers, output_explanatory_size, n_filters, device):
+    def __init__(self, input_size, predictive_layers, output_predictive_size, explanatory_input_size, explanatory_layers, output_explanatory_size, n_filters):
         
-        super(FFTNonlinearModel, self).__init__()
+        super(PGNNIVBaseline, self).__init__()
 
         # Parameters
         self.in_size = input_size
@@ -98,28 +104,20 @@ class FFTNonlinearModel(nn.Module):
         self.out_exp_size = output_explanatory_size
 
         self.n_filters = n_filters
-        self.device = device
 
         # Architecture
-        self.encoder = Encoder(self.in_size, self.pred_size[0], self.pred_size[1], 2*self.pred_size[2])
-        self.base_indices = FFT_modes_base
+        self.encoder = Encoder(self.in_size, self.pred_size[0], self.pred_size[1], self.pred_size[2])
+        self.decoder = Decoder(self.pred_size[2], self.pred_size[3], self.pred_size[4], self.out_pred_size)
         self.explanatory = Explanatory(self.in_exp_size, self.n_filters, self.exp_size[0], self.out_exp_size)
-        
+
     def forward(self, X):
 
         # Predictive network
         X = self.encoder(X)
+        X = self.decoder(X)
+        u = X.view(X.size(0), *self.out_pred_size)
 
-        # Manipulating output to obtain real and complex part
-        output_predictive = X.view(X.size(0), self.pred_size[2], 2)
-        real = output_predictive[..., 0]
-        imag = output_predictive[..., 1]
-    
-        # Reconstruction with FFT and manipulation of prediction output
-        base = torch.zeros((X.size(0), *self.out_pred_size), dtype=torch.complex64).to(self.device)
-        base.flatten(1, 3)[:, :self.base_indices] = torch.complex(real, imag)
-
-        u = reconstruct_data(base).to(self.device)        
+        # Manipulation of prediction output
         um = Mx(My(TensOps(u, space_dimension=2, contravariance=0, covariance=0))).values
 
         # Explanatory network

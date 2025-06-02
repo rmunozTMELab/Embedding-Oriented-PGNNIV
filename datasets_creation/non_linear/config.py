@@ -17,7 +17,7 @@ DATASET_CONFIG = {
     'MODEL_NAME': MODEL_NAME,
     'N_DATA': 100,             
     'N_DISCRETIZATION': 100,
-    'noise_sigma': 0,
+    'noise_sigma': 1,
     'x0': 0, 
     'xN': 1,  
     'y0': 0,  

@@ -1,5 +1,5 @@
-from non_linear_sigmoid.config import DATASET_CONFIG
-from non_linear_sigmoid.data_generator import DataGenerator
+from non_linear.config import DATASET_CONFIG
+from non_linear.data_generator import DataGenerator
 
 if __name__ == "__main__":
     

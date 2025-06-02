@@ -64,11 +64,11 @@ class Explanatory(nn.Module):
 
         return explanatory_output
     
-class PODNonlinearModel(nn.Module):
+class PGNNIVPOD(nn.Module):
     
     def __init__(self, input_size, predictive_layers, POD_base, output_predictive_size, explanatory_input_size, explanatory_layers, output_explanatory_size, n_filters):
         
-        super(PODNonlinearModel, self).__init__()
+        super(PGNNIVPOD, self).__init__()
 
         # Parameters
         self.in_size = input_size

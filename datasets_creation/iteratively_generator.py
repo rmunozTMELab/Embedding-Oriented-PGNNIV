@@ -8,8 +8,8 @@ if __name__ == "__main__":
     DATA_BASE_PATH = os.path.abspath(os.path.join(BASE_DIR, '..', '..', 'data')) 
 
     # Parameters of the data
-    N_data = [10, 20, 50, 100, 1000, 5000, 10000] 
-    sigma = [0, 1, 2, 5, 10] # The noise added in '%'
+    N_data = [10, 20, 50, 100, 1000, 5000] 
+    sigma = [0, 1, 2, 5] # The noise added in '%'
     combinations = list(itertools.product(N_data, sigma))
 
 
