@@ -194,6 +194,12 @@ def train_loop(model, optimizer, X_train, y_train, f_train, X_test, y_test, f_te
                             test_pi1_loss_list=test_pi1_loss_list, test_pi2_loss_list=test_pi2_loss_list, test_pi3_loss_list=test_pi3_loss_list)
 
     print("\nTraining process finished after", n_epochs, "epochs\n")
+
+    save_checkpoint(model, optimizer, epoch_i, model_results_path, time_list=time_list,
+                    train_total_loss_list=train_total_loss_list, train_e_loss_list=train_e_loss_list, 
+                    train_pi1_loss_list=train_pi1_loss_list, train_pi2_loss_list=train_pi2_loss_list, train_pi3_loss_list=train_pi3_loss_list,
+                    test_total_loss_list=test_total_loss_list, test_e_loss_list=test_e_loss_list,
+                    test_pi1_loss_list=test_pi1_loss_list, test_pi2_loss_list=test_pi2_loss_list, test_pi3_loss_list=test_pi3_loss_list)
     
     save_checkpoint(model, optimizer, epoch_i, model_results_path, end_flag=True, time_list=time_list,
                     train_total_loss_list=train_total_loss_list, train_e_loss_list=train_e_loss_list, 

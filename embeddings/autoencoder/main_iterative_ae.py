@@ -1,22 +1,32 @@
-import os
+import os 
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "../../")))
+
 import torch
-import GPUtil
 import itertools
+import matplotlib.pyplot as plt
+
 from sklearn.model_selection import train_test_split
 
-# Imports de la libreria propia
-from vecopsciml.kernels.derivative import DerivativeKernels
+# Own library imports
 from vecopsciml.utils import TensOps
+from vecopsciml.operators.zero_order import Mx, My
+from vecopsciml.kernels.derivative import DerivativeKernels
 
-# Imports de las funciones creadas para este programa
+# Function from this project
 from utils.folders import create_folder
 from utils.load_data import load_data
-from trainers.train import train_loop
+from trainers.train import train_loop, train_autoencoder_loop
+
+# Import model
+from architectures.autoencoder import Autoencoder
+from architectures.pgnniv_decoder import PGNNIVAutoencoder
 
 # Parameters of the data
-N_DATA = [10, 20, 50, 100, 1000, 5000] 
-SIGMA = [5] # The noise added in '%'
-N_MODES = [1, 2, 5, 10, 20, 50, 100]
+N_DATA = [10, 100, 1000] 
+SIGMA = [0, 1, 5] # The noise added in '%'
+N_MODES = [5, 10, 50]
 
 combinations = list(itertools.product(N_DATA, SIGMA, N_MODES))
 
@@ -28,15 +38,18 @@ for combination_i in combinations:
     sigma_i = combination_i[1]
     n_modes_i = combination_i[2]
 
-    data_name = 'non_linear_' + str(N_data_i) + '_' + str(sigma_i)
-    n_modes = n_modes_i
+    dataset = 'non_linear'
+    data_name = dataset + '_' + str(N_data_i) + '_' + str(sigma_i)
 
-    # Creamos los paths para las distintas carpetas
-    ROOT_PATH = r'/home/rmunoz/Escritorio/rmunozTMELab/Physically-Guided-Machine-Learning'
+    model = 'autoencoder'
+    model_name = model + '_model_' + str(n_modes_i)
+
+    ROOT_PATH = os.path.abspath(os.path.join(os.getcwd(), "../../"))
     DATA_PATH = os.path.join(ROOT_PATH, r'data/', data_name, data_name) + '.pkl'
     RESULTS_FOLDER_PATH = os.path.join(ROOT_PATH, r'results/', data_name)
-    MODEL_RESULTS_AE_PATH = os.path.join(ROOT_PATH, r'results/', data_name, 'model_autoencoder_AE_') + str(n_modes)
-    MODEL_RESULTS_PGNNIV_PATH = os.path.join(ROOT_PATH, r'results/', data_name, 'model_autoencoder_NN_') + str(n_modes)
+
+    MODEL_RESULTS_AE_PATH = os.path.join(ROOT_PATH, r'results/', data_name, model_name) + '_AE'
+    MODEL_RESULTS_PGNNIV_PATH = os.path.join(ROOT_PATH, r'results/', data_name, model_name) + '_NN'
 
     # Creamos las carpetas que sean necesarias (si ya están creadas se avisará de ello)
     create_folder(RESULTS_FOLDER_PATH)
@@ -96,9 +109,8 @@ for combination_i in combinations:
     f_train_NN = TensOps(f_train_NN.to(DEVICE), space_dimension=2, contravariance=0, covariance=0)
     f_test_NN = TensOps(f_test_NN.to(DEVICE), space_dimension=2, contravariance=0, covariance=0)
 
-    from model import Autoencoder
-    from trainers.train import train_autoencoder_loop
 
+    # Autoencoder
     autoencoder_input_shape = y_train_AE.values[0].shape
     latent_space_dim = [20, 10, n_modes_i, 10, 20]
     autoencoder_output_shape = y_train_AE.values[0].shape
@@ -110,37 +122,29 @@ for combination_i in combinations:
     y_test = y_test_AE
 
     autoencoder = Autoencoder(autoencoder_input_shape, latent_space_dim, autoencoder_output_shape).to(DEVICE)
-    optimizer = torch.optim.Adam(autoencoder.parameters(), lr=1e-2)
+    optimizer = torch.optim.Adam(autoencoder.parameters(), lr=3e-3)
 
     start_epoch = 0
-    n_epochs = 11000
+    n_epochs = 25000
     batch_size = 64
-    n_checkpoint = 11
+    n_checkpoint = 3
     new_lr = None
 
     train_autoencoder_loop(autoencoder, optimizer, X_train, y_train, X_test, y_test,  
                         n_checkpoint, start_epoch, n_epochs, batch_size, MODEL_RESULTS_AE_PATH, DEVICE, new_lr)
-
-    start_epoch = 10000
-    n_epochs = 22000
-    batch_size = 64
-    n_checkpoint = 11
-    new_lr = 3e-3
-
-    train_autoencoder_loop(autoencoder, optimizer, X_train, y_train, X_test, y_test,  
-                        n_checkpoint, start_epoch, n_epochs, batch_size, MODEL_RESULTS_AE_PATH, DEVICE, new_lr)
     
-    start_epoch = 20000
-    n_epochs = 25000
+    start_epoch = n_epochs-1
+    n_epochs = 30000
     batch_size = 64
-    n_checkpoint = 5
+    n_checkpoint = 3
     new_lr = 3e-4
 
     train_autoencoder_loop(autoencoder, optimizer, X_train, y_train, X_test, y_test,  
                         n_checkpoint, start_epoch, n_epochs, batch_size, MODEL_RESULTS_AE_PATH, DEVICE, new_lr)
+    
 
-    from vecopsciml.operators.zero_order import Mx, My
-    from model.ae_nonlinear_model import AutoencoderNonlinearModel
+
+    # PGNNIV
 
     # Predictive network architecture
     input_shape = X_train_NN[0].shape
@@ -163,27 +167,27 @@ for combination_i in combinations:
     # for name, param in pretrained_decoder.named_parameters():
     #     print(f"{name}: requires_grad={param.requires_grad}")
 
-    model = AutoencoderNonlinearModel(input_shape, predictive_layers, pretrained_decoder, predictive_output, explanatory_input,
+    model = PGNNIVAutoencoder(input_shape, predictive_layers, pretrained_decoder, predictive_output, explanatory_input,
                                     explanatory_layers, explanatory_output, n_filters_explanatory).to(DEVICE)
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
     # Parametros de entrenamiento (entrenamiento 1)
     start_epoch = 0
-    n_epochs = 110000
+    n_epochs = 100000
 
     batch_size = 64
-    n_checkpoints = 11
+    n_checkpoints = 3
 
     train_loop(model, optimizer, X_train_NN, y_train_NN, f_train_NN, X_test_NN, y_test_NN, f_test_NN,
             D, n_checkpoints, start_epoch=start_epoch, n_epochs=n_epochs, batch_size=batch_size, 
             model_results_path=MODEL_RESULTS_PGNNIV_PATH, device=DEVICE)
 
     # Parametros de entrenamiento (entrenamiento 2)
-    start_epoch = 100000
+    start_epoch = n_epochs-1
     n_epochs = 150000
 
     batch_size = 64 
-    n_checkpoints = 100
+    n_checkpoints = 3
 
     second_lr = 3e-4
 

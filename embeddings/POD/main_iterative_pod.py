@@ -1,28 +1,28 @@
-import os
+import os 
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "../../")))
+
 import torch
-import GPUtil
 import itertools
+import time
+
 from sklearn.model_selection import train_test_split
 
-# Imports de la libreria propia
-from vecopsciml.kernels.derivative import DerivativeKernels
 from vecopsciml.utils import TensOps
-
-# Imports de las funciones creadas para este programa
-from model.model import PODNonlinearModel
+from vecopsciml.operators.zero_order import Mx, My
+from vecopsciml.kernels.derivative import DerivativeKernels
 from utils.folders import create_folder
 from utils.load_data import load_data
 from trainers.train import train_loop
 
-
-import matplotlib.pyplot as plt
-from vecopsciml.operators.zero_order import Mx, My
-import time
+# Import model
+from architectures.pgnniv_pod import PGNNIVPOD
 
 # Parameters of the data
-N_DATA = [1000, 5000] 
-SIGMA = [0, 1, 5, 10] # The noise added in '%'
-N_MODES = [1, 2, 5, 10, 20, 50, 100]
+N_DATA = [10, 100, 1000] 
+SIGMA = [0, 1, 5] # The noise added in '%'
+N_MODES = [5, 10, 50]
 
 
 combinations = list(itertools.product(N_DATA, SIGMA, N_MODES))
@@ -35,14 +35,18 @@ for combination_i in combinations:
     sigma_i = combination_i[1]
     n_modes_i = combination_i[2]
 
-    data_name = 'non_linear_' + str(N_data_i) + '_' + str(sigma_i)
-    n_modes = n_modes_i
+    dataset = 'non_linear'
+    data_name = dataset + '_' + str(N_data_i) + '_' + str(sigma_i)
+
+    model = 'POD'
+    model_name = model + '_model_' + str(n_modes_i)
 
     # Creamos los paths para las distintas carpetas
-    ROOT_PATH = r'/home/rmunoz/Escritorio/rmunozTMELab/Physically-Guided-Machine-Learning'
+    ROOT_PATH = os.path.abspath(os.path.join(os.getcwd(), "../../"))
     DATA_PATH = os.path.join(ROOT_PATH, r'data/', data_name, data_name) + '.pkl'
     RESULTS_FOLDER_PATH = os.path.join(ROOT_PATH, r'results/', data_name)
-    MODEL_RESULTS_PATH = os.path.join(ROOT_PATH, r'results/', data_name, 'POD_model_') + str(n_modes)
+    MODEL_RESULTS_PATH = os.path.join(ROOT_PATH, r'results/', data_name, model_name)
+
 
     # Creamos las carpetas que sean necesarias (si ya están creadas se avisará de ello)
     create_folder(RESULTS_FOLDER_PATH)
@@ -56,7 +60,7 @@ for combination_i in combinations:
     dy = dataset['y_step_size']
     D = DerivativeKernels(dx, dy, 0).grad_kernels_two_dimensions()
 
-    DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     print(f"Using device: {DEVICE}")
 
@@ -92,7 +96,7 @@ for combination_i in combinations:
 
     U_train, S_train, Vt_train = torch.linalg.svd(y_train.values.detach().squeeze().to('cpu').view(y_train.values.detach().shape[0], -1), full_matrices=False)
 
-    num_modes = n_modes
+    num_modes = n_modes_i
 
     start_time = time.time()
 
@@ -127,26 +131,26 @@ for combination_i in combinations:
     n_filters_explanatory = 5
 
     # Load model and the optimizer
-    model = PODNonlinearModel(input_shape, predictive_layers, POD_base, predictive_output, explanatory_input, explanatory_layers, explanatory_output, n_filters_explanatory).to(DEVICE)
+    model = PGNNIVPOD(input_shape, predictive_layers, POD_base, predictive_output, explanatory_input, explanatory_layers, explanatory_output, n_filters_explanatory).to(DEVICE)
     optimizer = torch.optim.Adam(model.parameters(), lr=3e-3)
 
     # Parametros de entrenamiento
     start_epoch = 0
-    n_epochs = 110000
+    n_epochs = 100000
 
     batch_size = 64
-    n_checkpoints = 11
+    n_checkpoints = 3
 
     train_loop(model, optimizer, X_train, y_train, f_train, X_test, y_test, f_test,
             D, n_checkpoints, start_epoch=start_epoch, n_epochs=n_epochs, batch_size=batch_size, 
             model_results_path=MODEL_RESULTS_PATH, device=DEVICE)
 
     # Parametros de entrenamiento
-    start_epoch = 100000
+    start_epoch = n_epochs-1
     n_epochs = 150000
 
     batch_size = 64 
-    n_checkpoints = 100
+    n_checkpoints = 3
 
     second_lr = 3e-4
 
