@@ -143,9 +143,9 @@ def train_loop(model, optimizer, X_train, y_train, f_train, X_test, y_test, f_te
 
     # Start training loop for specified number of epochs
     for epoch_i in range(start_epoch, n_epochs):
-        
-        # Time instant when starts the training of the model for one epoch
-        time_init = time.time()
+
+        total_loss, total_e_loss, total_pi1, total_pi2, total_pi3 = 0, 0, 0, 0, 0
+        train_time_epoch = 0.0
 
         # Process training data in batches and prepare them in the needed format
         for batch_start in range(0, N_train, batch_size):
@@ -155,19 +155,24 @@ def train_loop(model, optimizer, X_train, y_train, f_train, X_test, y_test, f_te
             f_batch = TensOps(f_train.values[batch_start:(batch_start+batch_size)].to(device), space_dimension=f_train.space_dim, contravariance=f_train.order[0], covariance=f_train.order[1])
 
             # Train a batch
+            t0 = time.time()
             loss, e_loss, pi1_loss, pi2_loss, pi3_loss = train_epoch(model, optimizer, X_batch, y_batch, f_batch, D)
+            t1 = time.time()
+            train_time_epoch += (t1 - t0)
 
-        # Time instant when ends  the training of the model for one epoch and obtaining the total time
-        time_end = time.time()
-        train_time_epoch = time_end - time_init
+            total_loss += loss.item()
+            total_e_loss += e_loss.item()
+            total_pi1 += pi1_loss.item()
+            total_pi2 += pi2_loss.item()
+            total_pi3 += pi3_loss.item()
 
         # Record average training losses after processing all batches
         time_list.append(train_time_epoch)
-        train_total_loss_list.append(loss.item()/batch_size)
-        train_e_loss_list.append(e_loss.item()/batch_size)
-        train_pi1_loss_list.append(pi1_loss.item()/batch_size)
-        train_pi2_loss_list.append(pi2_loss.item()/batch_size)
-        train_pi3_loss_list.append(pi3_loss.item()/batch_size)
+        train_total_loss_list.append(total_loss/N_train)
+        train_e_loss_list.append(total_e_loss/N_train)
+        train_pi1_loss_list.append(total_pi1/N_train)
+        train_pi2_loss_list.append(total_pi2/N_train)
+        train_pi3_loss_list.append(total_pi3/N_train)
           
         # Evaluate model on the test dataset at the end of each epoch
         loss_test, e_loss_test, pi1_loss_test, pi2_loss_test, pi3_loss_test = test_epoch(model, X_test, y_test, f_test, D)
@@ -183,7 +188,7 @@ def train_loop(model, optimizer, X_train, y_train, f_train, X_test, y_test, f_te
         if epoch_i % (1 if n_epochs < 100 else (10 if n_epochs <= 1000 else 100)) == 0:
             # memory_usage_mb = psutil.Process().memory_info().rss / 1024 / 1024
             # print(f"Epoch {epoch_i}, Memory Usage: {memory_usage_mb:.2f} MB")
-            print(f'Epoch {epoch_i}, Train loss: {loss.item()/batch_size:.3e}, Test loss: {loss_test.item()/N_test:.3e}, MSE(e): {e_loss.item()/batch_size:.3e}, MSE(pi1): {pi1_loss.item()/batch_size:.3e}, MSE(pi2): {pi2_loss.item()/batch_size:.3e}, MSE(pi3): {pi3_loss.item()/batch_size:.3e}')
+            print(f'Epoch {epoch_i}, Train loss: {total_loss/N_train:.3e}, Test loss: {loss_test.item()/N_test:.3e}, MSE(e): {total_e_loss/N_train:.3e}, MSE(pi1): {total_pi1/N_train:.3e}, MSE(pi2): {total_pi2/N_train:.3e}, MSE(pi3): {total_pi3/N_train:.3e}')
 
         # Save a checkpoint at regular intervals
         if epoch_i % (int(n_epochs/n_checkpoints)) == 0:

@@ -19,14 +19,26 @@ from trainers.train import train_loop
 # Import model
 from architectures.pgnniv_pod import PGNNIVPOD
 
-# Parameters of the data
-# N_DATA = [10, 100, 1000] 
-# SIGMA = [0, 1, 5] # The noise added in '%'
-# N_MODES = [5, 10, 50]
+import random
 
-N_DATA = [20, 50, 5000] 
+seed = 42
+random.seed(seed)
+
+torch.manual_seed(seed)
+torch.cuda.manual_seed(seed)
+torch.cuda.manual_seed_all(seed)  
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
+
+# Parameters of the data
+N_DATA = [10, 100, 1000] 
 SIGMA = [0, 1, 5] # The noise added in '%'
-N_MODES = [1, 2, 3, 20, 100]
+N_MODES = [5, 10, 50]
+
+# Parameters of the data
+# N_DATA = [20, 50, 5000] 
+# SIGMA = [0, 1, 5] # The noise added in '%'
+# N_MODES = [1, 2, 3, 20, 100]
 
 
 combinations = list(itertools.product(N_DATA, SIGMA, N_MODES))

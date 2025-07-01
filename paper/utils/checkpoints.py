@@ -39,8 +39,7 @@ def load_results(model, optimizer, folder_path, map_location):
     checkpoint = torch.load(filename, weights_only=False, map_location=map_location)
 
     model.load_state_dict(checkpoint['model_state_dict'])
-    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
     
-    kwargs = {key: checkpoint[key] for key in checkpoint if key not in ['model_state_dict', 'optimizer_state_dict', 'model_architecture']}
+    kwargs = {key: checkpoint[key] for key in checkpoint if key not in ['model_state_dict', 'model_architecture']}
     
-    return model, optimizer, kwargs
+    return model, kwargs

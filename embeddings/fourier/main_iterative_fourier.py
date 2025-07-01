@@ -19,15 +19,25 @@ from utils.fourier_base import compute_fourier_base
 # Import model
 from architectures.pgnniv_fourier import PGNNIVFourier
 
+import random
+
+seed = 42
+random.seed(seed)
+
+torch.manual_seed(seed)
+torch.cuda.manual_seed(seed)
+torch.cuda.manual_seed_all(seed)  
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
 
 # Parameters of the data
-# N_DATA = [10, 100, 1000] 
-# SIGMA = [0, 1, 5] # The noise added in '%'
-# N_MODES = [5, 10, 50]
-
-N_DATA = [20, 50, 5000] 
+N_DATA = [10, 100, 1000] 
 SIGMA = [0, 1, 5] # The noise added in '%'
-N_MODES = [1, 2, 3, 20, 100]
+N_MODES = [5, 10, 50]
+
+# N_DATA = [20, 50, 5000] 
+# SIGMA = [0, 1, 5] # The noise added in '%'
+# N_MODES = [1, 2, 3, 20, 100]
 
 combinations = list(itertools.product(N_DATA, SIGMA, N_MODES))
 
@@ -63,7 +73,7 @@ for combination_i in combinations:
     dy = dataset['y_step_size']
     D = DerivativeKernels(dx, dy, 0).grad_kernels_two_dimensions()
 
-    DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    DEVICE = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
 
 #     print(f"Using device: {DEVICE}")
 

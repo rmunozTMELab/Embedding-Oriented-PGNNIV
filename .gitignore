@@ -3,6 +3,9 @@ results/
 __results_paper/
 .vscode/
 *.png
+__*
+__*/
+__*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -23,14 +23,25 @@ from trainers.train import train_loop, train_autoencoder_loop
 from architectures.autoencoder import Autoencoder
 from architectures.pgnniv_decoder import PGNNIVAutoencoder
 
-# Parameters of the data
-# N_DATA = [10, 100, 1000] 
-# SIGMA = [0, 1, 5] # The noise added in '%'
-# N_MODES = [5, 10, 50]
+import random
 
-N_DATA = [20, 50, 5000] 
+seed = 42
+random.seed(seed)
+
+torch.manual_seed(seed)
+torch.cuda.manual_seed(seed)
+torch.cuda.manual_seed_all(seed)  
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
+
+# Parameters of the data
+N_DATA = [10, 100, 1000] 
 SIGMA = [0, 1, 5] # The noise added in '%'
-N_MODES = [1, 2, 3, 20, 100]
+N_MODES = [5, 10, 50]
+
+# N_DATA = [20, 50, 5000] 
+# SIGMA = [0, 1, 5] # The noise added in '%'
+# N_MODES = [1, 2, 3, 20, 100]
 
 combinations = list(itertools.product(N_DATA, SIGMA, N_MODES))
 
@@ -68,7 +79,7 @@ for combination_i in combinations:
     dy = dataset['y_step_size']
     D = DerivativeKernels(dx, dy, 0).grad_kernels_two_dimensions()
 
-    DEVICE = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
+    DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     print(f"Using device: {DEVICE}")
 
@@ -94,12 +105,12 @@ for combination_i in combinations:
 
     X_AE, X_NN, y_AE, y_NN, K_AE, K_NN, f_AE, f_NN = train_test_split(X_train, y_train, K_train, f_train, test_size=prop_data_NN, random_state=42)
 
-    y_train_AE, y_test_AE = train_test_split(y_AE, test_size=0.2, random_state=42)
+    y_train_AE, y_test_AE = train_test_split(y_AE, test_size=0.3, random_state=42)
 
     y_train_AE = TensOps(y_train_AE.requires_grad_(True).to(DEVICE), space_dimension=2, contravariance=0, covariance=0)
     y_test_AE = TensOps(y_test_AE.requires_grad_(True).to(DEVICE), space_dimension=2, contravariance=0, covariance=0)
 
-    X_train_NN, X_test_NN, y_train_NN, y_test_NN, K_train_NN, K_test_NN, f_train_NN, f_test_NN = train_test_split(X_NN, y_NN, K_NN, f_NN, test_size=0.2, random_state=42)
+    X_train_NN, X_test_NN, y_train_NN, y_test_NN, K_train_NN, K_test_NN, f_train_NN, f_test_NN = train_test_split(X_NN, y_NN, K_NN, f_NN, test_size=0.3, random_state=42)
 
     X_train_NN = X_train_NN.to(DEVICE)
     X_test_NN = X_test_NN.to(DEVICE)
@@ -173,7 +184,7 @@ for combination_i in combinations:
 
     model = PGNNIVAutoencoder(input_shape, predictive_layers, pretrained_decoder, predictive_output, explanatory_input,
                                     explanatory_layers, explanatory_output, n_filters_explanatory).to(DEVICE)
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    optimizer = torch.optim.Adam(model.parameters(), lr=3e-3)
 
     # Parametros de entrenamiento (entrenamiento 1)
     start_epoch = 0
