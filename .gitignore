@@ -1,5 +1,6 @@
 data/
 results/
+error_tables/
 __results_paper/
 .vscode/
 *.png

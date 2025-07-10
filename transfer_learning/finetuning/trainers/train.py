@@ -1,10 +1,18 @@
 import torch
 import time 
+import random
 from utils.checkpoints import load_checkpoint, save_checkpoint
 from vecopsciml.utils import TensOps
 
 from .eval import loss_function
 from .eval import loss_function_autoencoder
+
+seed = 42
+random.seed(seed)
+
+torch.manual_seed(seed)
+torch.cuda.manual_seed(seed)
+torch.cuda.manual_seed_all(seed)  
 
 
 def train_epoch(model, optimizer, X_train, y_train, f_train, D):
@@ -152,14 +160,19 @@ def train_loop(model, optimizer, X_train, y_train, f_train, X_test, y_test, f_te
         # Process training data in batches and prepare them in the needed format
         for batch_start in range(0, N_train, batch_size):
 
-            X_batch = X_train[batch_start:(batch_start+batch_size)].to(device)
-            y_batch = TensOps(y_train.values[batch_start:(batch_start+batch_size)].to(device), space_dimension=y_train.space_dim, contravariance=y_train.order[0], covariance=y_train.order[1])
-            f_batch = TensOps(f_train.values[batch_start:(batch_start+batch_size)].to(device), space_dimension=f_train.space_dim, contravariance=f_train.order[0], covariance=f_train.order[1])
+            X_batch = X_train[batch_start:(batch_start+batch_size)]
+            y_batch = TensOps(y_train.values[batch_start:(batch_start+batch_size)], space_dimension=y_train.space_dim, contravariance=y_train.order[0], covariance=y_train.order[1])
+            f_batch = TensOps(f_train.values[batch_start:(batch_start+batch_size)], space_dimension=f_train.space_dim, contravariance=f_train.order[0], covariance=f_train.order[1])
+
+            torch.cuda.synchronize()
+            t0 = time.time()
 
             # Train a batch
-            t0 = time.time()
             loss, e_loss, pi1_loss, pi2_loss, pi3_loss = train_epoch(model, optimizer, X_batch, y_batch, f_batch, D)
+
+            torch.cuda.synchronize()
             t1 = time.time()
+            
             train_time_epoch += (t1 - t0)
 
             total_loss += loss.item()
