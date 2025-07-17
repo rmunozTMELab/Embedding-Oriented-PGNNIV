@@ -76,7 +76,7 @@ for combination_i in combinations:
     dy = dataset['y_step_size']
     D = DerivativeKernels(dx, dy, 0).grad_kernels_two_dimensions()
 
-    DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    DEVICE = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
 
     print(f"Using device: {DEVICE}")
 
