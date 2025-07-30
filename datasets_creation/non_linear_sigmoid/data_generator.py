@@ -216,8 +216,6 @@ class DataGenerator:
         u = self.add_noise(self.u_func(self.g1, self.g2, self.g3, self.X_mesh, self.Y_mesh))
         qx = self.add_noise(self.qx_func(self.g1, self.g2, self.g3, self.X_mesh, self.Y_mesh))
         qy = self.add_noise(self.qy_func(self.g1, self.g2, self.g3, self.X_mesh, self.Y_mesh))
-        k = self.add_noise(self.k_func(self.g1, self.g2, self.g3, self.X_mesh, self.Y_mesh))
-        f = self.add_noise(self.f_func(self.g1, self.g2, self.g3, self.X_mesh, self.Y_mesh))
 
         # Concatenate relevant data for X input features
         X = np.concatenate(
@@ -227,6 +225,11 @@ class DataGenerator:
              qy[:, 0, :, np.newaxis], qy[:, self.N_DISCRETIZATION - 1, :, np.newaxis]),
             axis=2)  # Combine features into a single array along a new dimension
         y = u  # Output labels for training
+
+        qx = self.qx_func(self.g1, self.g2, self.g3, self.X_mesh, self.Y_mesh)
+        qy = self.qy_func(self.g1, self.g2, self.g3, self.X_mesh, self.Y_mesh)
+        k = self.k_func(self.g1, self.g2, self.g3, self.X_mesh, self.Y_mesh)
+        f = self.f_func(self.g1, self.g2, self.g3, self.X_mesh, self.Y_mesh)
 
         # Split the data into training and validation sets
         split_data = train_test_split(X, y, self.g1, self.g2, self.g3, qx, qy, u, k, f, test_size=test_size, random_state=self.custom_seed)
