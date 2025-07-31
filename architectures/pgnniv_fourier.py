@@ -4,24 +4,6 @@ import torch.nn as nn
 from vecopsciml.utils import TensOps
 from vecopsciml.operators.zero_order import Mx, My
 
-def modes_base(data, n_modes):
-    # FFT decomposition and obtain energy of each mode
-    fft_data = torch.fft.fft2(data)
-    energy = torch.abs(fft_data)
-    energy_flattened = energy.flatten(1, 3)
-    # Get the n_modes more energetic modes and their indices
-    top_energetic = energy_flattened[:, :n_modes]
-    # Create an empty template to include the modes
-    filtered_modes = torch.zeros_like(energy, dtype=torch.complex64)
-    filtered_modes.flatten(1, 3)[:, :n_modes] = fft_data.flatten(1, 3)[:, :n_modes]
-    # Return the base with the 'n_modes' most energetic modes
-    return filtered_modes
-
-def reconstruct_data(coefficients_filtered):
-    # Compute inverse FFT and reconstruct data
-    reconstructed_data = torch.real(torch.fft.ifft2(coefficients_filtered))
-    return reconstructed_data
-
 class Encoder(nn.Module):
 
     def __init__(self, input_size, hidden_layer_1_size, hidden_layer_2_size, latent_space_size):
@@ -84,7 +66,7 @@ class Explanatory(nn.Module):
     
 class PGNNIVFourier(nn.Module):
     
-    def __init__(self, input_size, predictive_layers, FFT_modes_base, output_predictive_size, explanatory_input_size, explanatory_layers, output_explanatory_size, n_filters, device):
+    def __init__(self, input_size, predictive_layers, modes_base, output_predictive_size, explanatory_input_size, explanatory_layers, output_explanatory_size, n_filters, device):
         
         super(PGNNIVFourier, self).__init__()
 
@@ -102,7 +84,7 @@ class PGNNIVFourier(nn.Module):
 
         # Architecture
         self.encoder = Encoder(self.in_size, self.pred_size[0], self.pred_size[1], self.pred_size[2])
-        self.base = FFT_modes_base
+        self.base = modes_base
         self.explanatory = Explanatory(self.in_exp_size, self.n_filters, self.exp_size[0], self.out_exp_size)
         
     def forward(self, X):
