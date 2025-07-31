@@ -1,18 +1,18 @@
+# Ignore folders
 data/
 results/
 error_tables/
 __results_paper/
 .vscode/
-<<<<<<< HEAD
 src/
+
+# Ignore file types
 *.pth
 *.txt
-=======
 *.png
-__*
+
+# Ignore all directories and files starting with __
 __*/
-__*
->>>>>>> rmunoz_dev
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
