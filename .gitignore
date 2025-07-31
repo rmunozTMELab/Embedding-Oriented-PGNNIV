@@ -11,8 +11,10 @@ src/
 *.txt
 *.png
 
-# Ignore all directories and files starting with __
+# Ignore all files and folders starting with '__' but keep __init__.py
 __*/
+__*.*
+!__init__.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
