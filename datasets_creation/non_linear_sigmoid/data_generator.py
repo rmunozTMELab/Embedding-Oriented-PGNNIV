@@ -89,9 +89,8 @@ class DataGenerator:
         Returns:
             array: The computed 'u' values.
         """
-        g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y)  # Expand dimensions for calculations
-        # return np.sqrt(g1 + g2*X + g3*Y)  # Calculate u based on g1 and g2
-        return (g1 + g2*X + g3*Y)  # Calculate u based on g1 and g2
+        g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y)
+        return (g1 + g2*X + g3*Y) 
 
     def qx_func(self, g1, g2, g3, X, Y):
         """
@@ -106,9 +105,8 @@ class DataGenerator:
         Returns:
             array: The computed qx values.
         """
-        g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y)  # Expand dimensions for calculations
+        g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y) 
         u = (g1 + g2*X + g3*Y)
-        # return g2 / (2 * u * (1 + np.exp(-5*u)))  # Calculate qx based on g1 and g2
         return g2 / (1 + np.exp(-5*(u-1.5)))
 
     def qy_func(self, g1, g2, g3, X, Y):
@@ -124,9 +122,8 @@ class DataGenerator:
         Returns:
             array: The computed qy values.
         """
-        g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y)  # Expand dimensions for calculations
+        g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y)
         u = (g1 + g2*X + g3*Y)
-        # return g3 / (2 * u * (1 + np.exp(-5*u)))  # Calculate qx based on g1 and g2
         return g3 / (1 + np.exp(-5*(u-1.5)))
 
     def k_func(self, g1, g2, g3, X, Y):
@@ -142,9 +139,8 @@ class DataGenerator:
         Returns:
             array: The computed k values.
         """
-        g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y)  # Expand dimensions for calculations
+        g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y) 
         u = (g1 + g2*X + g3*Y)
-        # return 1 / (1 + np.exp(-5*u))  # Calculate k (returns an array of ones)
         return 1 / (1 + np.exp(-5*(u-1.5)))
 
     def f_func(self, g1, g2, g3, X, Y):
@@ -160,12 +156,8 @@ class DataGenerator:
         Returns:
             array: The computed k values.
         """
-        g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y)  # Expand dimensions for calculations
+        g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y)
         u = (g1 + g2*X + g3*Y)
-        # return (
-        #     (g2**2 * np.exp(5*u) * (-5*u + np.exp(5*u) + 1)) / (4 * u**3 * (np.exp(5*u) + 1)**2) +
-        #     (g3**2 * np.exp(5*u) * (-5*u + np.exp(5*u) + 1)) / (4 * u**3 * (np.exp(5*u) + 1)**2)
-        #     )
         return - (g2**2 * 5*np.exp(-5*(u-1.5))) / ((np.exp(-5*(u-1.5)) + 1)**2) - (g3**2 * 5*np.exp(-5*(u-1.5))) / ((np.exp(-5*(u-1.5)) + 1)**2)
 
     def add_noise(self, data):

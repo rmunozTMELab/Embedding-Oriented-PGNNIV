@@ -89,8 +89,8 @@ class DataGenerator:
         Returns:
             array: The computed 'u' values.
         """
-        g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y)  # Expand dimensions for calculations
-        return np.sqrt(g1 + g2*X + g3*Y)  # Calculate u based on g1 and g2
+        g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y)
+        return np.sqrt(g1 + g2*X + g3*Y)
 
     def qx_func(self, g1, g2, g3, X, Y):
         """
@@ -105,10 +105,8 @@ class DataGenerator:
         Returns:
             array: The computed qx values.
         """
-        g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y)  # Expand dimensions for calculations
-        return 1/2 * g2 * (1 - np.sqrt(g1 + g2*X + g3*Y))  # Calculate qx based on g1 and g2
-        # return 1/2 * g2 * np.ones_like(X)
-
+        g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y)
+        return 1/2 * g2 * (1 - np.sqrt(g1 + g2*X + g3*Y))
 
     def qy_func(self, g1, g2, g3, X, Y):
         """
@@ -123,10 +121,9 @@ class DataGenerator:
         Returns:
             array: The computed qy values.
         """
-        g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y)  # Expand dimensions for calculations
-        return 1/2 * g3 * (1 - np.sqrt(g1 + g2*X + g3*Y))  # Calculate qy based on g1 and g2
-        # return 1/2 * g3 * np.ones_like(Y)
-
+        g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y)
+        return 1/2 * g3 * (1 - np.sqrt(g1 + g2*X + g3*Y))
+    
     def k_func(self, g1, g2, g3, X, Y):
         """
         Computes a function 'k' based on inputs g1, g2 and g3.
@@ -140,9 +137,8 @@ class DataGenerator:
         Returns:
             array: The computed k values.
         """
-        g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y)  # Expand dimensions for calculations
-        return np.sqrt(g1 + g2*X + g3*Y) * (1 - np.sqrt(g1 + g2*X + g3*Y))  # Calculate k (returns an array of ones)
-        # return np.sqrt(g1 + g2*X + g3*Y)
+        g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y)  
+        return np.sqrt(g1 + g2*X + g3*Y) * (1 - np.sqrt(g1 + g2*X + g3*Y)) 
 
     def f_func(self, g1, g2, g3, X, Y):
         """
@@ -157,9 +153,8 @@ class DataGenerator:
         Returns:
             array: The computed k values.
         """
-        g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y)  # Expand dimensions for calculations
-        return (1/np.sqrt(g1 + g2*X + g3*Y)) * ((g2**2)/4 + (g3**2)/4)  # Calculate k (returns an array of ones)
-        # return np.zeros_like(g1*X)
+        g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y) 
+        return (1/np.sqrt(g1 + g2*X + g3*Y)) * ((g2**2)/4 + (g3**2)/4)
 
     def add_noise(self, data):
         """
