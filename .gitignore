@@ -1,9 +1,18 @@
 data/
 results/
+error_tables/
+__results_paper/
 .vscode/
+<<<<<<< HEAD
 src/
 *.pth
 *.txt
+=======
+*.png
+__*
+__*/
+__*
+>>>>>>> rmunoz_dev
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

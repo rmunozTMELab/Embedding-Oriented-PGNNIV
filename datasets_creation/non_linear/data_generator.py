@@ -90,8 +90,7 @@ class DataGenerator:
             array: The computed 'u' values.
         """
         g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y)  # Expand dimensions for calculations
-        # return np.sqrt(g1 + g2*X + g3*Y)  # Calculate u based on g1 and g2
-        return (g1 + g2*X + g3*Y)  # Calculate u based on g1 and g2
+        return np.sqrt(g1 + g2*X + g3*Y)  # Calculate u based on g1 and g2
 
     def qx_func(self, g1, g2, g3, X, Y):
         """
@@ -107,9 +106,9 @@ class DataGenerator:
             array: The computed qx values.
         """
         g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y)  # Expand dimensions for calculations
-        u = (g1 + g2*X + g3*Y)
-        # return g2 / (2 * u * (1 + np.exp(-5*u)))  # Calculate qx based on g1 and g2
-        return g2 / (1 + np.exp(-5*(u-1.5)))
+        return 1/2 * g2 * (1 - np.sqrt(g1 + g2*X + g3*Y))  # Calculate qx based on g1 and g2
+        # return 1/2 * g2 * np.ones_like(X)
+
 
     def qy_func(self, g1, g2, g3, X, Y):
         """
@@ -125,9 +124,8 @@ class DataGenerator:
             array: The computed qy values.
         """
         g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y)  # Expand dimensions for calculations
-        u = (g1 + g2*X + g3*Y)
-        # return g3 / (2 * u * (1 + np.exp(-5*u)))  # Calculate qx based on g1 and g2
-        return g3 / (1 + np.exp(-5*(u-1.5)))
+        return 1/2 * g3 * (1 - np.sqrt(g1 + g2*X + g3*Y))  # Calculate qy based on g1 and g2
+        # return 1/2 * g3 * np.ones_like(Y)
 
     def k_func(self, g1, g2, g3, X, Y):
         """
@@ -143,9 +141,8 @@ class DataGenerator:
             array: The computed k values.
         """
         g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y)  # Expand dimensions for calculations
-        u = (g1 + g2*X + g3*Y)
-        # return 1 / (1 + np.exp(-5*u))  # Calculate k (returns an array of ones)
-        return 1 / (1 + np.exp(-5*(u-1.5)))
+        return np.sqrt(g1 + g2*X + g3*Y) * (1 - np.sqrt(g1 + g2*X + g3*Y))  # Calculate k (returns an array of ones)
+        # return np.sqrt(g1 + g2*X + g3*Y)
 
     def f_func(self, g1, g2, g3, X, Y):
         """
@@ -161,16 +158,12 @@ class DataGenerator:
             array: The computed k values.
         """
         g1, g2, g3, X, Y = self._expand_dims(g1, g2, g3, X, Y)  # Expand dimensions for calculations
-        u = (g1 + g2*X + g3*Y)
-        # return (
-        #     (g2**2 * np.exp(5*u) * (-5*u + np.exp(5*u) + 1)) / (4 * u**3 * (np.exp(5*u) + 1)**2) +
-        #     (g3**2 * np.exp(5*u) * (-5*u + np.exp(5*u) + 1)) / (4 * u**3 * (np.exp(5*u) + 1)**2)
-        #     )
-        return - (g2**2 * 5*np.exp(-5*(u-1.5))) / ((np.exp(-5*(u-1.5)) + 1)**2) - (g3**2 * 5*np.exp(-5*(u-1.5))) / ((np.exp(-5*(u-1.5)) + 1)**2)
+        return (1/np.sqrt(g1 + g2*X + g3*Y)) * ((g2**2)/4 + (g3**2)/4)  # Calculate k (returns an array of ones)
+        # return np.zeros_like(g1*X)
 
     def add_noise(self, data):
         """
-        Adds uniform random noise to the input dataset.
+        Adds normal random noise to the input dataset.
 
         Args:
             data: numpy.ndarray
@@ -185,18 +178,18 @@ class DataGenerator:
         # Compute the maximum value in each sample along the (H, W) dimensions.
         noise_added_data = np.max(data, axis=(1, 2))
         
+        
         # Calculate the noise scale (sigma) for each sample.
         sigma = self.noise_sigma * noise_added_data
         
-        # Generate random uniform noise with the computed sigma as bounds.
-        noise_uniform = np.random.uniform(
-            low = -sigma[:, None, None],  # Lower bound for each sample.
-            high = sigma[:, None, None],  # Upper bound for each sample.
+        # Generate random normal noise with the computed sigma as bounds.
+        noise_normal = np.random.normal(
+            scale = sigma[:, None, None],  # Upper bound for each sample.
             size = data.shape             # Shape of noise array.
         )
         
         # Add the generated noise to the input data.
-        noise_added_data = data + noise_uniform
+        noise_added_data = data + noise_normal
         
         # Return the noisy data array.
         return noise_added_data
