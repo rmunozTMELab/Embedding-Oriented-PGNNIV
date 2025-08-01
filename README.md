@@ -53,9 +53,9 @@ The results demonstrate that the enhanced PGNNIV framework successfully identifi
 4. **Visualization**
    - Use the provided Jupyter notebooks in each embedding folder to visualize results and analyze model performance.
 
-## Citation
+<!-- ## Citation
 
-If you use this code or ideas from this project, please cite the corresponding paper.
+If you use this code or ideas from this project, please cite the corresponding paper. -->
 
 ## License
 
