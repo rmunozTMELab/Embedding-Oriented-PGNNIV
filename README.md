@@ -24,7 +24,7 @@ The results demonstrate that the enhanced PGNNIV framework successfully identifi
   - `POD/`
 
   Each folder contains a `main.ipynb` file for running one experiment isolatedly (for one dataset), and a `main_iterative_[embedding].py` file for running all the experiments for all the datasets for that embedding technique.
-- `transfer_learning/` — Contains all the knowledge transfer scripts in order to run the comparative between baseline method, fine-tuning and transfer learning.
+- `knowledge_transfer/` — Contains all the knowledge transfer scripts in order to run the comparative between baseline method, fine-tuning and transfer learning.
 - `paper/` — Jupyter notebooks for analysis and figures used in the publication.
 
 ## Main Features
@@ -48,7 +48,7 @@ The results demonstrate that the enhanced PGNNIV framework successfully identifi
 
 3. **Training**
    - Run the main scripts in each embedding folder (e.g., `main_iterative_ae.py`, `main_iterative_baseline.py`, etc.) to train models.
-   - Run the `transfer_learning/` notebooks in order to compare different knowledge transfer techniques.
+   - Run the `knowledge_transfer/` notebooks in order to compare different knowledge transfer techniques.
 
 4. **Visualization**
    - Use the provided Jupyter notebooks in each embedding folder to visualize results and analyze model performance.

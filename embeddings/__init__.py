@@ -1,1 +1,1 @@
-from . import baseline, fourier, POD, autoencoder, transfer_learning
+from . import baseline, fourier, POD, autoencoder, knowledge_transfer
