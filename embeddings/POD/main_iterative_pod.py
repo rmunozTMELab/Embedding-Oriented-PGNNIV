@@ -30,15 +30,11 @@ torch.cuda.manual_seed_all(seed)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
-# Parameters of the data
+
+# Data parameters
 N_DATA = [10, 100, 1000] 
 SIGMA = [0, 1, 5] # The noise added in '%'
 N_MODES = [5, 10, 50]
-
-# Parameters of the data
-# N_DATA = [20, 50, 5000] 
-# SIGMA = [0, 1, 5] # The noise added in '%'
-# N_MODES = [1, 2, 3, 20, 100]
 
 
 combinations = list(itertools.product(N_DATA, SIGMA, N_MODES))
@@ -57,14 +53,13 @@ for combination_i in combinations:
     model = 'POD'
     model_name = model + '_model_' + str(n_modes_i)
 
-    # Creamos los paths para las distintas carpetas
+    # Create paths for the different folders
     ROOT_PATH = os.path.abspath(os.path.join(os.getcwd(), "../../"))
     DATA_PATH = os.path.join(ROOT_PATH, r'data/', data_name, data_name) + '.pkl'
     RESULTS_FOLDER_PATH = os.path.join(ROOT_PATH, r'results/', data_name)
     MODEL_RESULTS_PATH = os.path.join(ROOT_PATH, r'results/', data_name, model_name)
 
-
-    # Creamos las carpetas que sean necesarias (si ya están creadas se avisará de ello)
+    # Create necessary folders (if already created, a message will be shown)
     create_folder(RESULTS_FOLDER_PATH)
     create_folder(MODEL_RESULTS_PATH)
 
