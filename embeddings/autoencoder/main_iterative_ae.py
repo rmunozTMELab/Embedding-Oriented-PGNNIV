@@ -39,10 +39,6 @@ N_DATA = [10, 100, 1000]
 SIGMA = [0, 1, 5] # The noise added in '%'
 N_MODES = [5, 10, 50]
 
-# N_DATA = [20, 50, 5000] 
-# SIGMA = [0, 1, 5] # The noise added in '%'
-# N_MODES = [1, 2, 3, 20, 100]
-
 combinations = list(itertools.product(N_DATA, SIGMA, N_MODES))
 
 for combination_i in combinations:
@@ -66,7 +62,7 @@ for combination_i in combinations:
     MODEL_RESULTS_AE_PATH = os.path.join(ROOT_PATH, r'results/', data_name, model_name) + '_AE'
     MODEL_RESULTS_PGNNIV_PATH = os.path.join(ROOT_PATH, r'results/', data_name, model_name) + '_NN'
 
-    # Creamos las carpetas que sean necesarias (si ya están creadas se avisará de ello)
+    # Create folders (if necessary)
     create_folder(RESULTS_FOLDER_PATH)
     create_folder(MODEL_RESULTS_AE_PATH)
     create_folder(MODEL_RESULTS_PGNNIV_PATH)
@@ -157,10 +153,7 @@ for combination_i in combinations:
     train_autoencoder_loop(autoencoder, optimizer, X_train, y_train, X_test, y_test,  
                         n_checkpoint, start_epoch, n_epochs, batch_size, MODEL_RESULTS_AE_PATH, DEVICE, new_lr)
     
-
-
     # PGNNIV
-
     # Predictive network architecture
     input_shape = X_train_NN[0].shape
     predictive_layers = [20, 10, n_modes_i]
@@ -179,14 +172,11 @@ for combination_i in combinations:
     for param in pretrained_decoder.parameters():
         param.requires_grad = False
 
-    # for name, param in pretrained_decoder.named_parameters():
-    #     print(f"{name}: requires_grad={param.requires_grad}")
-
     model = PGNNIVAutoencoder(input_shape, predictive_layers, pretrained_decoder, predictive_output, explanatory_input,
                                     explanatory_layers, explanatory_output, n_filters_explanatory).to(DEVICE)
     optimizer = torch.optim.Adam(model.parameters(), lr=3e-3)
 
-    # Parametros de entrenamiento (entrenamiento 1)
+    # Training parameters (first training)
     start_epoch = 0
     n_epochs = 100000
 
@@ -197,7 +187,7 @@ for combination_i in combinations:
             D, n_checkpoints, start_epoch=start_epoch, n_epochs=n_epochs, batch_size=batch_size, 
             model_results_path=MODEL_RESULTS_PGNNIV_PATH, device=DEVICE)
 
-    # Parametros de entrenamiento (entrenamiento 2)
+    # Training parameters (second training)
     start_epoch = n_epochs-1
     n_epochs = 150000
 
