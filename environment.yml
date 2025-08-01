@@ -1,4 +1,4 @@
-name: Embedding_PGNNIV_env
+name: embedding_pgnniv_env
 channels:
   - pytorch
   - nvidia
