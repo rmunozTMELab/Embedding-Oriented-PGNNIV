@@ -35,10 +35,6 @@ N_DATA = [10, 100, 1000]
 SIGMA = [0, 1, 5] # The noise added in '%'
 N_MODES = [5, 10, 50]
 
-# N_DATA = [20, 50, 5000] 
-# SIGMA = [0, 1, 5] # The noise added in '%'
-# N_MODES = [1, 2, 3, 20, 100]
-
 combinations = list(itertools.product(N_DATA, SIGMA, N_MODES))
 
 for combination_i in combinations:
@@ -55,13 +51,13 @@ for combination_i in combinations:
     model = 'fourier'
     model_name = model + '_model_' + str(n_modes_i)
 
-    # Creamos los paths para las distintas carpetas
+    # Create paths for the different folders
     ROOT_PATH = os.path.abspath(os.path.join(os.getcwd(), "../../"))
     DATA_PATH = os.path.join(ROOT_PATH, r'data/', data_name, data_name) + '.pkl'
     RESULTS_FOLDER_PATH = os.path.join(ROOT_PATH, r'results/', data_name)
     MODEL_RESULTS_PATH = os.path.join(ROOT_PATH, r'results/', data_name, model_name)
 
-    # Creamos las carpetas que sean necesarias (si ya están creadas se avisará de ello)
+    # Create necessary folders (if already created, a message will be shown)
     create_folder(RESULTS_FOLDER_PATH)
     create_folder(MODEL_RESULTS_PATH)
 
@@ -74,8 +70,6 @@ for combination_i in combinations:
     D = DerivativeKernels(dx, dy, 0).grad_kernels_two_dimensions()
 
     DEVICE = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
-
-#     print(f"Using device: {DEVICE}")
 
     # Train data splitting in train/test
     X = torch.tensor(dataset['X_train'], dtype=torch.float32).unsqueeze(1)
@@ -126,7 +120,7 @@ for combination_i in combinations:
     model = PGNNIVFourier(input_shape, predictive_layers, base, predictive_output, explanatory_input, explanatory_layers, explanatory_output, n_filters_explanatory, DEVICE).to(DEVICE)
     optimizer = torch.optim.Adam(model.parameters(), lr=3e-3)
 
-    # Parametros de entrenamiento
+    # Training parameters
     start_epoch = 0
     n_epochs = 100000
 
@@ -137,7 +131,7 @@ for combination_i in combinations:
                D,  n_checkpoints, start_epoch=start_epoch, n_epochs=n_epochs, batch_size=batch_size, 
                model_results_path=MODEL_RESULTS_PATH, device=DEVICE)
 
-    # Parametros de entrenamiento
+    # Training parameters
     start_epoch = n_epochs-1
     n_epochs = 150000
 
