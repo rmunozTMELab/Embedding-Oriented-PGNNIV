@@ -35,9 +35,7 @@ N_DATA = [10, 100, 1000]
 SIGMA = [0, 1, 5] # The noise added in '%'
 N_MODES = [5, 10, 50]
 
-# N_DATA = [20, 50, 5000] 
-# SIGMA = [0, 1, 5] # The noise added in '%'
-# N_MODES = [1, 2, 3, 20, 100]
+
 
 combinations = list(itertools.product(N_DATA, SIGMA, N_MODES))
 
@@ -55,13 +53,13 @@ for combination_i in combinations:
     model = 'baseline'
     model_name = model + '_model_' + str(n_modes_i)
 
-    # Creamos los paths para las distintas carpetas
+    # Create paths for the different folders
     ROOT_PATH = os.path.abspath(os.path.join(os.getcwd(), "../../"))
     DATA_PATH = os.path.join(ROOT_PATH, r'data/', data_name, data_name) + '.pkl'
     RESULTS_FOLDER_PATH = os.path.join(ROOT_PATH, r'results/', data_name)
     MODEL_RESULTS_PATH = os.path.join(ROOT_PATH, r'results/', data_name, model_name)
 
-    # Creamos las carpetas que sean necesarias (si ya están creadas se avisará de ello)
+    # Create necessary folders (if already created, a message will be shown)
     create_folder(RESULTS_FOLDER_PATH)
     create_folder(MODEL_RESULTS_PATH)
 
@@ -121,7 +119,7 @@ for combination_i in combinations:
     model = PGNNIVBaseline(input_shape, predictive_layers, predictive_output, explanatory_input, explanatory_layers, explanatory_output, n_filters_explanatory).to(DEVICE)
     optimizer = torch.optim.Adam(model.parameters(), lr=3e-3)
 
-    # Parametros de entrenamiento (entrenamiento 1)
+    # Training parameters (first training)
     start_epoch = 0
     n_epochs = 100000
 
@@ -132,8 +130,7 @@ for combination_i in combinations:
             D,  n_checkpoints, start_epoch=start_epoch, n_epochs=n_epochs, batch_size=batch_size, 
             model_results_path=MODEL_RESULTS_PATH, device=DEVICE)
     
-
-    # Parametros de entrenamiento (entrenamiento 2)
+    # Training parameters (second training)
     start_epoch = n_epochs-1
     n_epochs = 150000
 
