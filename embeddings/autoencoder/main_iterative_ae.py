@@ -10,9 +10,9 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 
 # Own library imports
-from vecopsciml.utils import TensOps
-from vecopsciml.operators.zero_order import Mx, My
-from vecopsciml.kernels.derivative import DerivativeKernels
+from utilities.utils import TensOps
+from utilities.operators.zero_order import Mx, My
+from utilities.kernels.derivative import DerivativeKernels
 
 # Function from this project
 from utils.folders import create_folder

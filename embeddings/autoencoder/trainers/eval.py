@@ -1,8 +1,8 @@
 import torch
 
-from vecopsciml.algebra import zero_order as azo
-from vecopsciml.operators import zero_order as zo
-from vecopsciml.utils import TensOps
+from utilities.algebra import zero_order as azo
+from utilities.operators import zero_order as zo
+from utilities.utils import TensOps
 
 
 def e_constraint(y_true, y_pred):

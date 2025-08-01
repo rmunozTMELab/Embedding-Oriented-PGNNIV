@@ -13,6 +13,8 @@ The results demonstrate that the enhanced PGNNIV framework successfully identifi
 
 ## Project Structure
 
+
+- `utilities/` — Core scientific machine learning utilities, including algebraic operations, kernel and operator definitions, and general-purpose helper functions.
 - `architectures/` — Neural network architectures for each embedding strategy.
 - `datasets_creation/` — Scripts for generating and processing synthetic datasets. 
 - `embeddings/` — Main experiments and visualizers for each embedding method:

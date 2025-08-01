@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 
-from vecopsciml.utils import TensOps
-from vecopsciml.operators.zero_order import Mx, My
+from utilities.utils import TensOps
+from utilities.operators.zero_order import Mx, My
 
 class Encoder(nn.Module):
 

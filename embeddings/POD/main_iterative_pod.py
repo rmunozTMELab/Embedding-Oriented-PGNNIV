@@ -9,9 +9,9 @@ import time
 
 from sklearn.model_selection import train_test_split
 
-from vecopsciml.utils import TensOps
-from vecopsciml.operators.zero_order import Mx, My
-from vecopsciml.kernels.derivative import DerivativeKernels
+from utilities.utils import TensOps
+from utilities.operators.zero_order import Mx, My
+from utilities.kernels.derivative import DerivativeKernels
 from utils.folders import create_folder
 from utils.load_data import load_data
 from trainers.train import train_loop

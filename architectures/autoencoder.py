@@ -1,9 +1,6 @@
 import torch
 import torch.nn as nn
 
-from vecopsciml.utils import TensOps
-from vecopsciml.operators.zero_order import Mx, My
-
 class Encoder(nn.Module):
 
     def __init__(self, input_size, hidden_layer_1_size, hidden_layer_2_size, latent_space_size):

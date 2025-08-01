@@ -2,7 +2,7 @@ import torch
 import time 
 import random
 from utils.checkpoints import load_checkpoint, save_checkpoint
-from vecopsciml.utils import TensOps
+from utilities.utils import TensOps
 
 from .eval import loss_function
 
